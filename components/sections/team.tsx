@@ -32,11 +32,10 @@ const ADVISORS: Person[] = [
     linkedin: "https://www.linkedin.com/in/grahamesnyder",
   },
   {
-    name: "Arvind Kumar, MD",
-    credentials: "MD",
+    name: "Arvind Kumar",
     role: "Managing Director, Health Care Services · Head of Digital Health",
     affiliation: "EisnerAmper LLP",
-    bio: "Physician and healthcare-technology strategist with 25+ years across executive and advisory roles — former CIO at Cincinnati Children's, SVP at Xerox Healthcare, and digital-risk leadership at a Big 4 firm. Adjunct faculty at Harvard School of Public Health, Northeastern, and Suffolk. Advises AIWIZN on responsible AI deployment, clinical validation, and healthcare-technology risk.",
+    bio: "Healthcare-technology strategist with 25+ years across executive and advisory roles — former CIO at Cincinnati Children's, SVP at Xerox Healthcare, and digital-risk leadership at a Big 4 firm. Adjunct faculty at Harvard School of Public Health, Northeastern, and Suffolk. Advises AIWIZN on responsible AI deployment, clinical validation, and healthcare-technology risk.",
     linkedin: "https://www.linkedin.com/in/arvindpkumar",
   },
   {
