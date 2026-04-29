@@ -1,0 +1,28 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="m-tl" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9A6C"/>
+      <stop offset="100%" stop-color="#D94B12"/>
+    </linearGradient>
+    <linearGradient id="m-tr" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00EDB4"/>
+      <stop offset="100%" stop-color="#00A87A"/>
+    </linearGradient>
+    <linearGradient id="m-bl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A4A70"/>
+      <stop offset="100%" stop-color="#0D2D47"/>
+    </linearGradient>
+    <linearGradient id="m-br" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0BBCD4"/>
+      <stop offset="100%" stop-color="#076A80"/>
+    </linearGradient>
+  </defs>
+  <polygon points="200,20  20,200  200,200"  fill="url(#m-tl)"/>
+  <polygon points="200,20  200,200  380,200" fill="url(#m-tr)"/>
+  <polygon points="20,200  200,380  200,200" fill="url(#m-bl)"/>
+  <polygon points="200,200 200,380  380,200" fill="url(#m-br)"/>
+  <line x1="200" y1="20"  x2="200" y2="380" stroke="#FAF7F2" stroke-width="3" stroke-opacity="0.55"/>
+  <line x1="20"  y1="200" x2="380" y2="200" stroke="#FAF7F2" stroke-width="3" stroke-opacity="0.55"/>
+  <polygon points="200,20  380,200  200,380  20,200" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.25"/>
+  <circle cx="200" cy="200" r="6" fill="#ffffff" fill-opacity="0.25"/>
+</svg>

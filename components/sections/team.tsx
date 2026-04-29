@@ -1,40 +1,51 @@
 interface Person {
   name: string;
+  credentials?: string;
   role: string;
   affiliation?: string;
   bio: string;
+  linkedin?: string;
 }
 
 const FOUNDER: Person = {
   name: "Thomas K Vaidhyan",
-  role: "Founder & CEO",
-  bio: "Architect of the AIWIZN multi-agentic learning platform. Brings deep expertise in AI systems design, evidence-based learning science, and healthcare technology. Leads platform strategy, product vision, and investor relations across the 14-month build roadmap.",
+  role: "Founder & CEO · AIWIZN / Aten Inc.",
+  bio: "Architect of the AIWIZN multi-agentic learning platform and founder of Aten Inc. Serial ed-tech entrepreneur across immersive learning, serious games, and AI-driven training simulations, with research partnerships at NC State, Virginia Tech, and Duke. Founding board member of BEST NC and Research Triangle High School. Leads platform strategy, product vision, and investor relations across the 14-month build roadmap.",
+  linkedin: "https://www.linkedin.com/in/thomasvaidhyan",
 };
 
 const ADVISORS: Person[] = [
   {
     name: "Annie Ninan",
-    role: "Executive Director",
-    affiliation: "University of Texas",
-    bio: "Nursing education leadership, curriculum design, and institutional implementation strategy for large academic health systems.",
+    credentials: "MA, MBA, MSN, FNP-BC",
+    role: "Deputy Executive Director",
+    affiliation: "Tennessee Population Health Consortium · UTHSC",
+    bio: "Board-certified family nurse practitioner pairing clinical practice with health economics and analytics. At the University of Tennessee Health Science Center she directs the MAPMSN-MBA programme and leads value-based care work. Advises AIWIZN on translating nursing-education frameworks into scalable clinical learning architectures.",
+    linkedin: "https://www.linkedin.com/in/annie-ninan-ma-economics-mba-msn-fnp-bc",
   },
   {
     name: "Dr. Graham Snyder",
-    role: "Medical Director",
-    affiliation: "WakeMed Health & Hospitals",
-    bio: "Clinical informatics, patient safety systems, and healthcare quality improvement. Guides SIMULUS physiological fidelity and COGNITA clinical validity.",
-  },
-  {
-    name: "Dr. Erin T. Carey",
-    role: "Faculty",
-    affiliation: "University of North Carolina",
-    bio: "Nursing faculty with expertise in simulation-based education, clinical judgment development, and NCLEX-NGN competency frameworks. Informs PRAXIS and NARRATIVE design.",
+    credentials: "MD, FACEP",
+    role: "Medical Director, Patient Simulation Center",
+    affiliation: "WakeMed · Associate Program Director, UNC Emergency Medicine",
+    bio: "Engineer-turned-emergency-physician who runs WakeMed's Patient Simulation Center — a high-fidelity training facility serving thousands of clinicians annually. Combines simulation pedagogy with emergency-medicine rigour. Guides SIMULUS physiological fidelity and COGNITA clinical validity.",
+    linkedin: "https://www.linkedin.com/in/grahamesnyder",
   },
   {
     name: "Arvind Kumar, MD",
-    role: "AI in Healthcare Expert",
+    credentials: "MD",
+    role: "Managing Director, Health Care Services · Head of Digital Health",
     affiliation: "EisnerAmper LLP",
-    bio: "Physician and AI in Healthcare strategist bridging clinical practice and emerging technology.",
+    bio: "Physician and healthcare-technology strategist with 25+ years across executive and advisory roles — former CIO at Cincinnati Children's, SVP at Xerox Healthcare, and digital-risk leadership at a Big 4 firm. Adjunct faculty at Harvard School of Public Health, Northeastern, and Suffolk. Advises AIWIZN on responsible AI deployment, clinical validation, and healthcare-technology risk.",
+    linkedin: "https://www.linkedin.com/in/arvindpkumar",
+  },
+  {
+    name: "Dr. Erin T. Carey",
+    credentials: "MD, MSCR",
+    role: "Faculty",
+    affiliation: "University of North Carolina",
+    bio: "UNC physician-educator with deep expertise in procedural simulation and clinical-judgement development. Informs PRAXIS and NARRATIVE design and the bridge between procedural practice and competency assessment.",
+    linkedin: "https://www.linkedin.com/in/erin-c-66b4b7a7",
   },
 ];
 
@@ -74,8 +85,28 @@ function Card({ person, featured = false }: { person: Person; featured?: boolean
           </>
         )}
       </p>
-      <h3 className="mt-3 font-display text-2xl text-ink">{person.name}</h3>
+      <h3 className="mt-3 font-display text-2xl text-ink">
+        {person.name}
+        {person.credentials && (
+          <span className="ml-2 font-mono text-xs uppercase tracking-label text-ink-3">
+            · {person.credentials}
+          </span>
+        )}
+      </h3>
       <p className="mt-3 text-sm leading-relaxed text-ink-2">{person.bio}</p>
+      {person.linkedin && (
+        <a
+          href={person.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-label text-ink-3 transition hover:text-teal-dark"
+        >
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden fill="currentColor">
+            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0z" />
+          </svg>
+          LinkedIn
+        </a>
+      )}
     </article>
   );
 }

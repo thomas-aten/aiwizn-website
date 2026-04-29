@@ -28,7 +28,6 @@ export function SiteFooter() {
 
           <FooterCol title="Company">
             <FooterLink href="/about">About</FooterLink>
-            <FooterLink href="/investors">Investors</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/login">Sign in</FooterLink>
           </FooterCol>
