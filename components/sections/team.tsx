@@ -18,7 +18,7 @@ const FOUNDER: Person = {
   role: "Founder & CEO · AIWIZN / Aten Inc.",
   bio: "Architect of the AIWIZN multi-agentic learning platform and founder of Aten Inc. Serial ed-tech entrepreneur across immersive learning, serious games, and AI-driven training simulations, with research partnerships at NC State, Virginia Tech, and Duke. Founding board member of BEST NC and Research Triangle High School. Leads platform strategy, product vision, and investor relations across the 14-month build roadmap.",
   linkedin: "https://www.linkedin.com/in/thomasvaidhyan",
-  image: "/images/team/thomas.jpg",
+  image: "/images/team/thomas.JPG",
   accent: "teal",
 };
 
@@ -32,7 +32,7 @@ const ADVISORS: Person[] = [
     bio: "Valid active RN and Advanced Nurse Practitioner licensure. Experienced clinical, operational, and business leader across health-system organisations. Pairs frontline nursing practice with health-economics, analytics, and value-based-care strategy — informing how AIWIZN translates nursing-education frameworks into scalable clinical learning architectures.",
     linkedin:
       "https://www.linkedin.com/in/annie-ninan-ma-economics-mba-msn-fnp-bc",
-    image: "/images/team/annie.jpg",
+    image: "/images/team/annie.jpeg",
     accent: "teal",
   },
   {
@@ -43,7 +43,7 @@ const ADVISORS: Person[] = [
       "WakeMed · Associate Program Director, UNC Emergency Medicine",
     bio: "Longest-serving clinical champion of simulation-based training at WakeMed. Co-developed AIWIZN's clinical validation framework. Engineer-turned-emergency-physician who runs WakeMed's Center for Innovative Learning — a high-fidelity training facility serving thousands of clinicians annually. Guides SIMULUS physiological fidelity and COGNITA clinical validity.",
     linkedin: "https://www.linkedin.com/in/grahamesnyder",
-    image: "/images/team/graham.jpg",
+    image: "/images/team/graham.jpeg",
     accent: "orange",
   },
   {
@@ -52,7 +52,7 @@ const ADVISORS: Person[] = [
     affiliation: "EisnerAmper LLC",
     bio: "Healthcare-technology strategist with 25+ years across executive and advisory roles — former CIO at Cincinnati Children's, SVP at Xerox Healthcare, and digital-risk leadership at a Big 4 firm. Adjunct faculty at Harvard School of Public Health, Northeastern, and Suffolk. Advises AIWIZN on responsible AI deployment, clinical validation, and healthcare-technology risk.",
     linkedin: "https://www.linkedin.com/in/arvindpkumar",
-    image: "/images/team/arvind.jpg",
+    image: "/images/team/arvind.jpeg",
     accent: "gold",
   },
   {
@@ -62,7 +62,7 @@ const ADVISORS: Person[] = [
     affiliation: "University of North Carolina",
     bio: "UNC surgeon-innovator leading the Division of Minimally Invasive Gynecologic Surgery and co-leading FastTraCS, UNC's clinical-innovation accelerator. Pairs procedural rigour with translational research and device design — informing AIWIZN's PRAXIS and NARRATIVE work on procedural fidelity, clinical-judgement formation, and innovation pathways from bedside insight to validated practice.",
     linkedin: "https://www.linkedin.com/in/erin-c-66b4b7a7",
-    image: "/images/team/erin.jpg",
+    image: "/images/team/erin.png",
     accent: "purple",
   },
 ];
