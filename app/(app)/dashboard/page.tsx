@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, STAGES } from "@/lib/agents";
 
@@ -26,7 +27,29 @@ export default async function DashboardPage() {
         operating product.
       </p>
 
-      <section className="mt-12">
+      <Link
+        href="/dashboard/clinical-engine"
+        className="card mt-10 block overflow-hidden border-teal/30 bg-gradient-to-br from-white via-white to-teal/5 p-8 transition hover:border-teal/60 hover:shadow-md md:p-10"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[10px] uppercase tracking-label text-teal-dark">
+              ● Live demo · Members only
+            </p>
+            <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
+              Launch the AIWIZN Clinical Engine →
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-2">
+              Run a scenario through the live PRAXIS → SIMULUS → COGNITA flow.
+              The same engine that earned the NBME Centennial semi-finalist
+              recognition, embedded for authenticated members.
+            </p>
+          </div>
+          <span className="btn-primary">Launch engine</span>
+        </div>
+      </Link>
+
+      <section className="mt-14">
         <h2 className="font-display text-2xl text-ink">The flywheel, today</h2>
         <div className="mt-5 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
           {STAGES.map((s, i) => (
