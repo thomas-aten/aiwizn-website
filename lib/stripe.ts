@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { PLANS, type Plan, type PriceTier } from "@/lib/pricing";
 
 let cachedStripe: Stripe | null = null;
 
@@ -18,17 +19,16 @@ export function getStripe(): Stripe {
   return cachedStripe;
 }
 
-export function getPriceIdForTier(
-  tier: "early_bird" | "regular",
-): string {
-  const id =
-    tier === "early_bird"
-      ? process.env.STRIPE_PRICE_ID_EARLY_BIRD
-      : process.env.STRIPE_PRICE_ID_REGULAR;
+/**
+ * Resolves the Stripe price ID for a given plan + tier from env vars.
+ * Throws a clear error if the matching env var is missing.
+ */
+export function getPriceId(plan: Plan, tier: PriceTier): string {
+  const envKey = PLANS[plan].envKey[tier];
+  const id = process.env[envKey];
   if (!id) {
     throw new Error(
-      `Missing STRIPE_PRICE_ID_${tier.toUpperCase()} env var. ` +
-        "Create the price in Stripe Dashboard and add the price ID to env.",
+      `Missing ${envKey} env var. Create the price in Stripe Dashboard and add the price ID to env.`,
     );
   }
   return id;

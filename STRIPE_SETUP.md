@@ -12,11 +12,15 @@ One-time setup to wire the AIWIZN engines bundle behind a paid annual subscripti
 2. **Products → + Add product:**
    - **Name:** AIWIZN Engines — Annual
    - **Description:** Annual access to the AIWIZN Clinical Engine and JC 2026 Engine.
-   - Add **two prices** to this same product:
-     - **Early bird** — `$9.99` USD, recurring **yearly**, lookup key: `aiwizn_engines_annual_early_bird`
-     - **Standard** — `$29.99` USD, recurring **yearly**, lookup key: `aiwizn_engines_annual_regular`
+   - Add **four prices** to this same product:
+     - **Individual · Early bird** — `$9.99` USD, recurring **yearly**, **Pricing model: Flat rate**, lookup key: `aiwizn_engines_individual_early_bird`
+     - **Individual · Standard** — `$29.99` USD, recurring **yearly**, **Pricing model: Flat rate**, lookup key: `aiwizn_engines_individual_regular`
+     - **Institutional · Early bird** — `$279.99` USD, recurring **yearly**, **Pricing model: Per unit** (so quantity × $279.99 at checkout), lookup key: `aiwizn_engines_institutional_early_bird`
+     - **Institutional · Standard** — `$349.99` USD, recurring **yearly**, **Pricing model: Per unit**, lookup key: `aiwizn_engines_institutional_regular`
    - Hit **Save**.
-3. Copy the two **price IDs** (start with `price_…`). You'll paste them into env vars below.
+3. Copy all four **price IDs** (start with `price_…`). You'll paste them into env vars below.
+
+> **Important:** for the institutional prices, choose **"Per unit"** as the pricing model so each nurse seat at checkout multiplies against the per-seat amount. Individual prices stay on **"Flat rate"**.
 
 ## 2 · Get the API keys
 
@@ -53,8 +57,10 @@ Vercel → Project `aiwizn-website` → Settings → Environment Variables. Add 
 | --- | --- |
 | `STRIPE_SECRET_KEY` | `sk_live_…` (or `sk_test_…` for preview) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` from step 3 |
-| `STRIPE_PRICE_ID_EARLY_BIRD` | `price_…` for the $9.99 price |
-| `STRIPE_PRICE_ID_REGULAR` | `price_…` for the $29.99 price |
+| `STRIPE_PRICE_ID_EARLY_BIRD` | `price_…` for the **$9.99 individual** price |
+| `STRIPE_PRICE_ID_REGULAR` | `price_…` for the **$29.99 individual** price |
+| `STRIPE_PRICE_ID_INSTITUTIONAL_EARLY_BIRD` | `price_…` for the **$279.99/nurse** price |
+| `STRIPE_PRICE_ID_INSTITUTIONAL_REGULAR` | `price_…` for the **$349.99/nurse** price |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOi…` from step 4 |
 | `NEXT_PUBLIC_PRICING_TIER` | `early_bird` (flip to `regular` when you want the price to switch) |
 

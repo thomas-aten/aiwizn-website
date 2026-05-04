@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
-import { ACTIVE_TIER } from "@/lib/pricing";
-import { getPriceIdForTier, getStripe } from "@/lib/stripe";
+import {
+  ACTIVE_TIER,
+  PLANS,
+  SELF_SERVE_SEAT_CAP,
+  type Plan,
+  type PriceTier,
+} from "@/lib/pricing";
+import { getPriceId, getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
 /**
  * Creates a Stripe Checkout Session for the engines annual subscription.
- * Requires the user to be signed in. Anonymous → 401.
+ * Requires the user to be signed in.
  *
- * Body (optional): { tier?: "early_bird" | "regular" } — defaults to ACTIVE_TIER.
+ * Body:
+ *   plan?: "individual" | "institutional"   (default "individual")
+ *   tier?: "early_bird" | "regular"          (default ACTIVE_TIER)
+ *   quantity?: number                        (default 1; institutional = nurse count)
  */
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -25,10 +34,36 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as {
-    tier?: "early_bird" | "regular";
+    plan?: Plan;
+    tier?: PriceTier;
+    quantity?: number;
   };
-  const tier = body.tier ?? ACTIVE_TIER;
-  const priceId = getPriceIdForTier(tier);
+
+  const plan: Plan = body.plan === "institutional" ? "institutional" : "individual";
+  const tier: PriceTier = body.tier ?? ACTIVE_TIER;
+
+  const isInstitutional = plan === "institutional";
+  const requestedQty = Number.isFinite(body.quantity) ? Math.floor(body.quantity!) : 1;
+  const quantity = isInstitutional ? Math.max(1, requestedQty) : 1;
+
+  if (isInstitutional && quantity > SELF_SERVE_SEAT_CAP) {
+    return NextResponse.json(
+      {
+        error: `For ${SELF_SERVE_SEAT_CAP}+ nurses, please email Thomas@ateninc.com for volume pricing and invoiced billing.`,
+      },
+      { status: 400 },
+    );
+  }
+
+  let priceId: string;
+  try {
+    priceId = getPriceId(plan, tier);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Stripe price not configured." },
+      { status: 500 },
+    );
+  }
 
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
@@ -37,17 +72,21 @@ export async function POST(request: Request) {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity }],
       customer_email: user.email,
       client_reference_id: user.id,
       metadata: {
         supabase_user_id: user.id,
+        plan,
         price_tier: tier,
+        seat_count: String(quantity),
       },
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,
+          plan,
           price_tier: tier,
+          seat_count: String(quantity),
         },
       },
       success_url: `${origin}/dashboard/engines?checkout=success`,
@@ -65,4 +104,19 @@ export async function POST(request: Request) {
     console.error("[checkout] error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+// Allow GET for convenient debugging (returns config snapshot, no secrets).
+export async function GET() {
+  const plans = Object.fromEntries(
+    Object.entries(PLANS).map(([id, p]) => [
+      id,
+      {
+        name: p.name,
+        active: p.prices[ACTIVE_TIER],
+        regular: p.prices.regular,
+      },
+    ]),
+  );
+  return NextResponse.json({ active_tier: ACTIVE_TIER, plans });
 }

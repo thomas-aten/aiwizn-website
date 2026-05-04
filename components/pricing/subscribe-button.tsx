@@ -4,15 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import type { Plan, PriceTier } from "@/lib/pricing";
 
 interface SubscribeButtonProps {
-  tier: "early_bird" | "regular";
+  plan?: Plan;
+  tier: PriceTier;
+  quantity?: number;
   className?: string;
   label?: string;
 }
 
 export function SubscribeButton({
+  plan = "individual",
   tier,
+  quantity,
   className,
   label = "Subscribe now",
 }: SubscribeButtonProps) {
@@ -38,7 +43,7 @@ export function SubscribeButton({
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ plan, tier, quantity }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
 
