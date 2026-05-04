@@ -43,8 +43,20 @@ async function syncSubscription(
 
   const item = sub.items.data[0];
   const priceId = item?.price?.id ?? null;
-  const periodStart = item?.current_period_start ?? null;
-  const periodEnd = item?.current_period_end ?? null;
+  // Stripe API < 2024-12-18 keeps period bounds on the subscription itself.
+  // Newer versions move them to the items[]; read both, prefer subscription-level.
+  const subAny = sub as unknown as {
+    current_period_start?: number | null;
+    current_period_end?: number | null;
+  };
+  const itemAny = item as unknown as {
+    current_period_start?: number | null;
+    current_period_end?: number | null;
+  };
+  const periodStart =
+    subAny.current_period_start ?? itemAny?.current_period_start ?? null;
+  const periodEnd =
+    subAny.current_period_end ?? itemAny?.current_period_end ?? null;
 
   const row = {
     user_id: userId,
