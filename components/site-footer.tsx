@@ -24,6 +24,7 @@ export function SiteFooter() {
             <FooterLink href="/platform#agents">The 10 agents</FooterLink>
             <FooterLink href="/for-hospitals">For hospitals</FooterLink>
             <FooterLink href="/for-schools">For schools</FooterLink>
+            <FooterLink href="/pricing">Pricing</FooterLink>
           </FooterCol>
 
           <FooterCol title="Company">

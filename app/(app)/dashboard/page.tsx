@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, STAGES } from "@/lib/agents";
+import { hasActiveEnginesSubscription } from "@/lib/entitlement";
+import { ACTIVE_PRICE } from "@/lib/pricing";
 
 export const metadata = {
   title: "Workspace",
@@ -15,6 +17,8 @@ export default async function DashboardPage() {
   const fullName =
     (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? "";
 
+  const entitled = await hasActiveEnginesSubscription();
+
   return (
     <>
       <p className="label">Workspace</p>
@@ -27,27 +31,47 @@ export default async function DashboardPage() {
         operating product.
       </p>
 
-      <Link
-        href="/dashboard/clinical-engine"
-        className="card mt-10 block overflow-hidden border-teal/30 bg-gradient-to-br from-white via-white to-teal/5 p-8 transition hover:border-teal/60 hover:shadow-md md:p-10"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="max-w-2xl">
-            <p className="font-mono text-[10px] uppercase tracking-label text-teal-dark">
-              ● Live demo · Members only
-            </p>
-            <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
-              Launch the AIWIZN Clinical Engine →
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-2">
-              Run a scenario through the live PRAXIS → SIMULUS → COGNITA flow.
-              The same engine that earned the NBME Centennial semi-finalist
-              recognition, embedded for authenticated members.
-            </p>
+      {entitled ? (
+        <Link
+          href="/dashboard/engines"
+          className="card mt-10 block overflow-hidden border-teal/30 bg-gradient-to-br from-white via-white to-teal/5 p-8 transition hover:border-teal/60 hover:shadow-md md:p-10"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="font-mono text-[10px] uppercase tracking-label text-teal-dark">
+                ● Subscription active · Both engines unlocked
+              </p>
+              <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
+                Launch the AIWIZN Engines →
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-ink-2">
+                Run scenarios through the Clinical Engine or the JC 2026 Engine.
+              </p>
+            </div>
+            <span className="btn-primary">Open engines</span>
           </div>
-          <span className="btn-primary">Launch engine</span>
+        </Link>
+      ) : (
+        <div className="card mt-10 overflow-hidden border-orange/30 bg-gradient-to-br from-white via-white to-orange/5 p-8 md:p-10">
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="font-mono text-[10px] uppercase tracking-label text-orange">
+                ● No active subscription
+              </p>
+              <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
+                Unlock both engines for {ACTIVE_PRICE.display} / yr.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-ink-2">
+                Annual subscription · Clinical Engine + JC 2026 Engine ·
+                Cancel anytime.
+              </p>
+            </div>
+            <Link href="/pricing" className="btn-primary">
+              See pricing
+            </Link>
+          </div>
         </div>
-      </Link>
+      )}
 
       <section className="mt-14">
         <h2 className="font-display text-2xl text-ink">The flywheel, today</h2>

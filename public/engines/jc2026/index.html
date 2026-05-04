@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AIWIZN Clinical Engine · JC 2026 Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* === Live AIWIZN Clinical Engine palette === */
+  --teal: #00C896;
+  --teal-d: #00A87A;
+  --teal-l: rgba(0,200,150,.10);
+  --orange: #FF6B35;
+  --orange-d: #D94B12;
+  --orange-l: rgba(255,107,53,.10);
+  --navy: #0A1826;
+  --navy-2: #1A3A5C;
+  --navy-l: rgba(10,24,38,.07);
+  --cyan: #0BBCD4;
+  --crimson: #DC2626;
+  --crimson-l: rgba(220,38,38,.09);
+  --amber: #F59E0B;
+  --amber-l: rgba(245,158,11,.10);
+  --rose: #F43F5E;
+  --purple: #7C3AED;
+  --purple-l: rgba(124,58,237,.10);
+  --bg: #FFFFFF;
+  --bg-1: #F5F8FA;
+  --bg-2: #EEF3F7;
+  --border: #DDE8EF;
+  --border-2: #C4D5E2;
+  --txt: #0A1826;
+  --txt-2: #2E4A62;
+  --txt-3: #6B88A0;
+  --txt-4: #A2BAC8;
+  --shadow-sm: 0 1px 4px rgba(10,24,38,.07);
+  --shadow: 0 4px 18px rgba(10,24,38,.10);
+  --shadow-lg: 0 8px 40px rgba(10,24,38,.16);
+  --ecg-green: #00E88A;
+  --ecg-red: #FF5050;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg-1);
+  color: var(--txt);
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  font-size: 14px; line-height: 1.6; font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; color: var(--navy); margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.01em; }
+h2 { font-size: clamp(22px, 3vw, 32px); }
+h3 { font-size: 21px; line-height: 1.25; }
+h4 { font-size: 17px; }
+.serif { font-family: 'Instrument Serif', Georgia, serif; }
+.serif-i { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+.muted { color: var(--txt-3); }
+a { color: var(--teal-d); text-decoration: none; }
+
+/* ========= Sticky top header ========= */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  height: 54px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 22px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark { width: 28px; height: 28px; }
+.wordmark {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+  color: var(--navy); letter-spacing: 0.02em;
+}
+.tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 7px;
+  letter-spacing: 0.2em; color: var(--teal-d); font-weight: 600;
+  text-transform: uppercase; align-self: flex-start; margin-top: 2px;
+}
+.crumbs {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.16em;
+  color: var(--txt-3); text-transform: uppercase;
+  display: flex; gap: 8px; align-items: center;
+}
+.crumbs .active { color: var(--teal-d); font-weight: 600; }
+.crumbs .sep { color: var(--txt-4); }
+.live {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--teal-l); border: 1px solid rgba(0,200,150,.3);
+  padding: 4px 10px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  color: var(--teal-d); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.live::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--teal-d);
+  box-shadow: 0 0 8px var(--teal-d); animation: pulseDot 1.6s infinite;
+}
+@keyframes pulseDot { 0%,100% { opacity:1; transform: scale(1); } 50% { opacity: .5; transform: scale(.8); } }
+
+/* Supabase connection pill */
+.db-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  color: var(--txt-3); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.db-pill.connected { background: var(--teal-l); color: var(--teal-d); border-color: rgba(0,200,150,.3); }
+.db-pill.error { background: var(--crimson-l); color: var(--crimson); border-color: rgba(220,38,38,.3); }
+.db-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--txt-4);
+  animation: pulseDot 1.6s infinite;
+}
+.db-pill.connected .db-dot { background: var(--teal-d); box-shadow: 0 0 6px var(--teal-d); }
+.db-pill.error .db-dot { background: var(--crimson); box-shadow: 0 0 6px var(--crimson); animation: none; }
+
+/* Toast */
+.toast {
+  pointer-events: auto;
+  background: var(--navy); color: #fff;
+  border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 12px 36px rgba(10,24,38,0.32);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 0.04em; line-height: 1.6;
+  min-width: 280px; max-width: 380px;
+  border-left: 3px solid var(--teal);
+  animation: toastIn .25s ease;
+}
+.toast.error { border-left-color: var(--crimson); }
+.toast.warn { border-left-color: var(--amber); }
+.toast .toast-head {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); margin-bottom: 4px;
+}
+.toast.error .toast-head { color: var(--crimson); }
+.toast.warn .toast-head { color: var(--amber); }
+.toast .toast-body { color: #E0EAEF; font-size: 11px; }
+.toast .toast-uid { color: var(--txt-4); font-size: 9.5px; margin-top: 4px; word-break: break-all; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+
+/* New session row pulse */
+.session-row.new-row { animation: rowFlash 1.4s ease; }
+@keyframes rowFlash {
+  0% { background: var(--teal-l); }
+  100% { background: transparent; }
+}
+
+/* ========= Layout: sidebar + main ========= */
+.layout { display: grid; grid-template-columns: 240px 1fr; max-width: 1480px; margin: 0 auto; }
+.sidebar {
+  position: sticky; top: 54px;
+  height: calc(100vh - 54px); overflow-y: auto;
+  background: var(--bg); border-right: 1px solid var(--border);
+  padding: 18px 14px;
+}
+.side-section { margin-bottom: 18px; }
+.side-section .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--txt-3);
+  padding: 0 8px; margin-bottom: 6px;
+}
+.side-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 6px;
+  font-size: 12.5px; color: var(--txt-2); cursor: pointer;
+  border-left: 3px solid transparent; margin-left: -3px;
+}
+.side-link:hover { background: var(--bg-2); color: var(--navy); }
+.side-link.active { color: var(--teal-d); background: var(--teal-l); border-left-color: var(--teal); font-weight: 600; }
+.side-link .dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--txt-4);
+}
+.side-link.active .dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+.side-link .sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); margin-left: auto; }
+
+.main { padding: 32px 36px 80px; min-width: 0; }
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 24px 20px 60px; }
+}
+
+/* ========= Section pattern ========= */
+section { margin-bottom: 36px; scroll-margin-top: 70px; }
+.section-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.2em; color: var(--teal-d); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ========= Hero ========= */
+.hero {
+  text-align: center; padding: 36px 16px 28px;
+}
+.hero .compass { width: 84px; height: 84px; margin: 0 auto 16px; display: block; }
+.hero h1 { max-width: 880px; margin: 0 auto 14px; }
+.hero h1 em { font-style: italic; color: var(--teal-d); }
+.hero .lede {
+  font-size: 16px; color: var(--txt-2); max-width: 660px; margin: 0 auto 22px; line-height: 1.55;
+}
+.hero .arch-callout {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 999px;
+  padding: 10px 18px; box-shadow: var(--shadow-sm);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--txt-2);
+}
+.arch-callout .progress {
+  width: 120px; height: 4px; background: var(--bg-2); border-radius: 2px; overflow: hidden;
+}
+.arch-callout .progress > i {
+  display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--cyan));
+  width: 0%; transition: width .6s ease;
+}
+.arch-callout .label { color: var(--teal-d); font-weight: 700; }
+
+/* ========= Buttons ========= */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--teal); color: #fff; border: 1px solid var(--teal);
+  padding: 10px 22px; border-radius: 8px; cursor: pointer;
+  transition: all .2s; font-family: 'JetBrains Mono', monospace;
+}
+.btn:hover { background: var(--teal-d); border-color: var(--teal-d); box-shadow: 0 4px 14px rgba(0,200,150,.35); }
+.btn.ghost { background: transparent; color: var(--txt-2); border-color: var(--border-2); }
+.btn.ghost:hover { color: var(--navy); border-color: var(--navy); box-shadow: none; }
+.btn.orange { background: var(--orange); border-color: var(--orange); }
+.btn.orange:hover { background: var(--orange-d); border-color: var(--orange-d); box-shadow: 0 4px 14px rgba(255,107,53,.35); }
+.btn.crimson { background: var(--crimson); border-color: var(--crimson); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn:disabled:hover { box-shadow: none; }
+
+/* ========= Scenario overview cards ========= */
+.ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 16px; }
+.ov-card {
+  position: relative; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 18px 16px; cursor: pointer;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  overflow: hidden;
+}
+.ov-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--teal);
+}
+.ov-card.crimson::before { background: var(--crimson); }
+.ov-card.amber::before { background: var(--amber); }
+.ov-card.purple::before { background: var(--purple); }
+.ov-card.orange::before { background: var(--orange); }
+.ov-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--teal); }
+.ov-card .ov-num { font-family: 'Instrument Serif', serif; font-size: 42px; color: var(--teal); line-height: 1; margin-bottom: 4px; }
+.ov-card.crimson .ov-num { color: var(--crimson); }
+.ov-card.amber .ov-num { color: var(--amber); }
+.ov-card.purple .ov-num { color: var(--purple); }
+.ov-card.orange .ov-num { color: var(--orange); }
+.ov-card .ov-id {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+  color: var(--teal-d); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px;
+}
+.ov-card.crimson .ov-id { color: var(--crimson); }
+.ov-card.amber .ov-id { color: var(--amber); }
+.ov-card.purple .ov-id { color: var(--purple); }
+.ov-card.orange .ov-id { color: var(--orange); }
+.ov-card .ov-title { font-family: 'Instrument Serif', serif; font-size: 21px; line-height: 1.2; color: var(--navy); margin: 4px 0 10px; }
+.ov-card .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.ov-card .meta { font-size: 11.5px; color: var(--txt-3); }
+.badge {
+  display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 3px;
+  background: var(--teal-l); color: var(--teal-d); border: 1px solid rgba(0,200,150,.25);
+}
+.badge.crimson { background: var(--crimson-l); color: var(--crimson); border-color: rgba(220,38,38,.25); }
+.badge.amber { background: var(--amber-l); color: var(--amber); border-color: rgba(245,158,11,.3); }
+.badge.purple { background: var(--purple-l); color: var(--purple); border-color: rgba(124,58,237,.25); }
+.badge.orange { background: var(--orange-l); color: var(--orange-d); border-color: rgba(255,107,53,.25); }
+.badge.navy { background: var(--bg-2); color: var(--navy-2); border-color: var(--border); }
+
+/* ========= Env hero (photographic) ========= */
+.env-hero {
+  position: relative; border-radius: 16px; overflow: hidden;
+  height: 220px; margin-bottom: 14px;
+  background-size: cover; background-position: center;
+  filter: brightness(0.92) saturate(0.78);
+}
+.env-hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10,24,38,0.05) 0%, rgba(10,24,38,0.6) 100%);
+}
+.env-hero .env-overlay {
+  position: absolute; left: 24px; bottom: 18px; right: 24px; z-index: 2; color: #fff;
+}
+.env-hero .env-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal);
+  text-shadow: 0 1px 2px rgba(0,0,0,.4); margin-bottom: 6px;
+}
+.env-hero .env-title {
+  font-family: 'Instrument Serif', serif; font-size: clamp(22px, 3vw, 30px); line-height: 1.2;
+  color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.5);
+}
+.env-hero .env-title em { color: var(--teal); font-style: italic; }
+
+/* ========= Scene cards ========= */
+.scene {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  margin-bottom: 14px; box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.scene::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--teal);
+}
+.scene.crimson::before { background: var(--crimson); }
+.scene.amber::before { background: var(--amber); }
+.scene.purple::before { background: var(--purple); }
+.scene.orange::before { background: var(--orange); }
+.scene-head {
+  padding: 14px 22px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.scene-head .scene-id {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal-d);
+}
+.scene.crimson .scene-id { color: var(--crimson); }
+.scene.amber .scene-id { color: var(--amber); }
+.scene.purple .scene-id { color: var(--purple); }
+.scene.orange .scene-id { color: var(--orange); }
+.scene-head .scene-title {
+  font-family: 'Instrument Serif', serif; font-size: 21px; color: var(--navy); flex: 1;
+}
+.scene-body { padding: 22px; }
+
+/* ========= Patient situation card ========= */
+.situation {
+  background: var(--bg-2); border-left: 4px solid var(--teal); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 16px;
+}
+.situation .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.16em; color: var(--teal-d); text-transform: uppercase; margin-bottom: 6px;
+}
+.situation .body {
+  font-size: 13.5px; color: var(--txt-2); font-style: italic; line-height: 1.65;
+}
+.situation .body strong { color: var(--navy); font-style: normal; font-weight: 600; }
+
+/* ========= Vitals monitor ========= */
+.monitor-wrap {
+  background: var(--bg); border: 1.5px solid var(--border-2); border-radius: 12px;
+  padding: 14px; margin-bottom: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
+}
+.monitor-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border);
+}
+.monitor-head .title {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--txt-3); text-transform: uppercase;
+}
+.monitor-head .news2 {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-3); letter-spacing: 0.14em;
+}
+.monitor-head .news2 .score { font-size: 18px; font-weight: 700; color: var(--navy); margin: 0 4px; }
+.monitor-head .news2 .score.warn { color: var(--amber); }
+.monitor-head .news2 .score.danger { color: var(--crimson); }
+.vitals-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  margin-bottom: 10px;
+}
+@media (max-width: 740px) { .vitals-grid { grid-template-columns: repeat(3, 1fr); } }
+.vital-box {
+  position: relative; background: var(--bg); border: 1.5px solid var(--border-2);
+  border-radius: 8px; padding: 7px 10px; min-height: 60px;
+  transition: border-color .25s, background-color .25s;
+}
+.vital-box.warn { border-color: var(--amber); background: var(--amber-l); }
+.vital-box.danger { border-color: var(--crimson); background: var(--crimson-l); animation: alarmFlash 1.5s infinite ease-in-out; }
+.vital-box.good { border-color: var(--teal); background: var(--teal-l); }
+@keyframes alarmFlash { 0%,100% { background: var(--crimson-l); } 50% { background: rgba(220,38,38,.20); } }
+.vital-box .l {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; color: var(--txt-3); text-transform: uppercase;
+}
+.vital-box .v {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700;
+  color: var(--navy); line-height: 1.05; margin-top: 2px;
+  animation: numberRoll .4s ease;
+}
+.vital-box.warn .v { color: var(--amber); }
+.vital-box.danger .v { color: var(--crimson); }
+.vital-box.good .v { color: var(--teal-d); }
+.vital-box .u {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); margin-top: 1px;
+}
+@keyframes numberRoll { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ECG strip */
+.ecg-strip {
+  position: relative; height: 56px; background: var(--teal-l);
+  border: 1px solid rgba(0,200,150,.25); border-radius: 8px;
+  overflow: hidden;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,200,150,.05) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(90deg, rgba(0,200,150,.05) 0 1px, transparent 1px 20px);
+}
+.ecg-strip svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ecg-line {
+  fill: none; stroke: var(--ecg-green); stroke-width: 1.5;
+  stroke-dasharray: 1200; stroke-dashoffset: 1200;
+  animation: ecgScroll 2.6s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(0,232,138,.5));
+}
+.ecg-line.fast { stroke: var(--ecg-red); animation-duration: 1.7s; filter: drop-shadow(0 0 4px rgba(255,80,80,.6)); }
+.ecg-line.afib { stroke: var(--amber); animation-duration: 2.1s; filter: drop-shadow(0 0 4px rgba(245,158,11,.6)); }
+@keyframes ecgScroll { from { stroke-dashoffset: 1200; } to { stroke-dashoffset: 0; } }
+.ecg-label {
+  position: absolute; top: 4px; right: 8px; z-index: 2;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  letter-spacing: 0.16em; color: var(--teal-d); font-weight: 700; text-transform: uppercase;
+}
+.ecg-label.fast { color: var(--crimson); }
+.ecg-label.afib { color: var(--amber); }
+
+/* ========= Decision panel ========= */
+.dec {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 12px; overflow: hidden;
+}
+.dec-head {
+  background: var(--teal-l); padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(0,200,150,.2);
+}
+.dec-head .dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--teal);
+  box-shadow: 0 0 8px var(--teal);
+}
+.dec-head .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--teal-d); text-transform: uppercase;
+}
+.dec-head .id { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); margin-left: auto; letter-spacing: 0.12em; }
+.dec-body { padding: 14px 16px 4px; font-size: 13.5px; font-weight: 600; color: var(--navy); line-height: 1.6; }
+.dec-body strong, .dec-body b { color: var(--navy); }
+.dec-body em { font-style: italic; color: var(--txt-2); }
+.dec-body .quote {
+  display: block; font-family: 'Instrument Serif', serif; font-style: italic;
+  font-size: 16px; color: var(--txt-2); margin: 10px 0 0; padding-left: 14px;
+  border-left: 2px solid var(--teal);
+  font-weight: 400;
+}
+.dec-signal {
+  background: var(--bg-2); border-top: 1px solid var(--border);
+  padding: 8px 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+  color: var(--txt-3); letter-spacing: 0.1em;
+}
+
+/* EHR row */
+.ehr-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+@media (max-width: 740px) { .ehr-row { grid-template-columns: 1fr; } }
+.ehr-cell {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px;
+}
+.ehr-cell .l {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+  letter-spacing: 0.14em; color: var(--txt-3); text-transform: uppercase;
+}
+.ehr-cell .v { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--navy); margin-top: 3px; font-weight: 500; }
+
+/* Choices */
+.choices { display: grid; gap: 8px; margin-top: 12px; }
+.choice {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; cursor: pointer;
+  transition: all .15s; display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: flex-start;
+}
+.choice:hover { border-color: var(--teal); background: var(--teal-l); }
+.choice .cid {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  color: var(--txt-3); letter-spacing: 0.1em; padding-top: 2px; min-width: 26px;
+}
+.choice .verb {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 600;
+  color: var(--teal-d); background: var(--teal-l);
+  padding: 2px 7px; border-radius: 3px; flex: 0 0 auto;
+  border: 1px solid rgba(0,200,150,.2);
+  align-self: flex-start;
+}
+.choice .text { font-size: 13px; color: var(--navy); line-height: 1.5; }
+
+/* SIMULUS / RESONANCE / COGNITA callouts */
+.simulus-alert {
+  background: var(--crimson-l); border: 1px solid rgba(220,38,38,.25); border-left: 4px solid var(--crimson);
+  border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: var(--navy);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.simulus-alert .lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800;
+  letter-spacing: 0.16em; color: var(--crimson); text-transform: uppercase; flex: 0 0 auto;
+  animation: pulseSoft 2s infinite ease-in-out;
+}
+@keyframes pulseSoft { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+.resonance-coach {
+  background: var(--teal-l); border: 1px solid rgba(0,200,150,.25); border-left: 4px solid var(--teal);
+  border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: var(--navy);
+}
+.resonance-coach .lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 800; letter-spacing: 0.16em; color: var(--teal-d); text-transform: uppercase; margin-bottom: 4px; }
+.resonance-coach.warn { background: var(--amber-l); border-color: rgba(245,158,11,.3); border-left-color: var(--amber); }
+.resonance-coach.warn .lbl { color: var(--amber); }
+.resonance-coach.bad { background: var(--crimson-l); border-color: rgba(220,38,38,.25); border-left-color: var(--crimson); }
+.resonance-coach.bad .lbl { color: var(--crimson); }
+.cognita-trace {
+  background: var(--purple-l); border-left: 3px solid var(--purple); border-radius: 6px;
+  padding: 8px 12px; margin: 8px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--txt-2); letter-spacing: 0.04em;
+}
+.cognita-trace b { color: var(--purple); font-weight: 600; }
+
+/* ========= Phase tracker (CONTINUUM-style) ========= */
+.continuum {
+  display: flex; align-items: center; gap: 10px; margin: 16px 0; flex-wrap: wrap;
+  padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+}
+.ct-stage {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 80px;
+}
+.ct-dot {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--bg-2); border: 2px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.ct-stage.active .ct-dot {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(0,200,150,.18), 0 0 12px rgba(0,200,150,.4);
+  animation: ambientGlow 2s infinite;
+}
+.ct-stage.complete .ct-dot { background: var(--teal-d); color: #fff; border-color: var(--teal-d); }
+@keyframes ambientGlow {
+  0%,100% { box-shadow: 0 0 0 4px rgba(0,200,150,.18), 0 0 10px rgba(0,200,150,.3); }
+  50% { box-shadow: 0 0 0 5px rgba(0,200,150,.25), 0 0 18px rgba(0,200,150,.5); }
+}
+.ct-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--txt-3); text-transform: uppercase; text-align: center;
+}
+.ct-stage.active .ct-label { color: var(--teal-d); }
+.ct-stage.complete .ct-label { color: var(--teal-d); }
+.ct-line { flex: 0 0 16px; height: 2px; background: var(--border); align-self: center; margin-top: -16px; }
+.ct-stage.complete + .ct-line { background: var(--teal); }
+
+/* ========= LUMINA Dashboard ========= */
+.lumina-hero {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; margin-bottom: 18px;
+}
+@media (max-width: 740px) { .lumina-hero { grid-template-columns: 1fr; } }
+
+.dash-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
+}
+@media (max-width: 740px) { .dash-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-card {
+  position: relative; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 16px 14px; overflow: hidden;
+}
+.stat-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); }
+.stat-card.crimson::before { background: var(--crimson); }
+.stat-card.amber::before { background: var(--amber); }
+.stat-card.cyan::before { background: var(--cyan); }
+.stat-card .lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--txt-3); text-transform: uppercase; margin-bottom: 8px;
+}
+.stat-card .val { font-family: 'Instrument Serif', serif; font-size: 32px; color: var(--navy); line-height: 1; }
+.stat-card .val.crimson { color: var(--crimson); }
+.stat-card .val.amber { color: var(--amber); }
+.stat-card .val.cyan { color: var(--cyan); }
+.stat-card .sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--txt-3); margin-top: 6px; letter-spacing: 0.06em; }
+.stat-card .trend {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em;
+  margin-top: 4px; color: var(--teal-d);
+}
+.stat-card .trend.down { color: var(--crimson); }
+
+/* dash-panel */
+.dash-panel {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 18px 14px; margin-bottom: 14px;
+}
+.dash-panel .panel-head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.dash-panel h3 { font-family: 'Instrument Serif', serif; font-size: 19px; }
+.dash-panel .panel-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  color: var(--teal-d); letter-spacing: 0.16em; text-transform: uppercase;
+}
+
+/* Recent sessions */
+.session-row {
+  display: grid; grid-template-columns: 32px 1fr auto auto; gap: 12px; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.session-row:last-child { border-bottom: 0; }
+.session-row .av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--teal-l); color: var(--teal-d);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+}
+.session-row .av.amber { background: var(--amber-l); color: var(--amber); }
+.session-row .av.crimson { background: var(--crimson-l); color: var(--crimson); }
+.session-row .name { font-size: 12.5px; font-weight: 600; color: var(--navy); }
+.session-row .meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); margin-top: 2px; }
+.session-row .cci {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--teal-l); color: var(--teal-d);
+}
+.session-row .cci.amber { background: var(--amber-l); color: var(--amber); }
+.session-row .cci.crimson { background: var(--crimson-l); color: var(--crimson); }
+
+/* Domain radar */
+.radar-row {
+  display: flex; align-items: center; gap: 10px; padding: 6px 0;
+}
+.radar-row .r-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 600;
+  color: var(--txt-2); letter-spacing: 0.06em; min-width: 220px; text-transform: lowercase;
+}
+.radar-row .r-bar {
+  flex: 1; height: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px;
+  overflow: hidden;
+}
+.radar-row .r-bar > i { display: block; height: 100%; background: var(--teal); transition: width .5s ease; }
+.radar-row.amber .r-bar > i { background: var(--amber); }
+.radar-row.crimson .r-bar > i { background: var(--crimson); }
+.radar-row .r-pct {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--navy);
+  width: 40px; text-align: right;
+}
+
+/* PERSONA terminal */
+.persona-terminal {
+  background: var(--navy); color: #E0EAEF; border-radius: 12px; padding: 22px 24px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.9;
+}
+.persona-terminal .pt-head {
+  font-family: 'Instrument Serif', serif; font-size: 22px; color: #fff; margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: 10px;
+}
+.persona-terminal .pt-meta { color: var(--txt-4); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px; }
+.persona-terminal .row { display: grid; grid-template-columns: 240px 1fr; gap: 12px; padding: 4px 0; }
+.persona-terminal .k { color: var(--teal); }
+.persona-terminal .v { color: #E0EAEF; }
+.persona-terminal .v.amber { color: var(--amber); }
+.persona-terminal .v.crimson { color: var(--rose); }
+.persona-terminal .v.good { color: var(--teal); }
+.persona-terminal .nwi {
+  display: inline-block; padding: 4px 12px; border-radius: 6px;
+  background: var(--teal); color: var(--navy); font-weight: 700; letter-spacing: 0.08em;
+}
+.persona-terminal .nwi.amber { background: var(--amber); }
+.persona-terminal .nwi.crimson { background: var(--crimson); color: #fff; }
+
+/* Gap heatmap */
+.hm-grid {
+  display: grid; grid-template-columns: 200px repeat(5, 1fr); gap: 4px;
+  margin-top: 10px;
+}
+.hm-cell {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px;
+  padding: 8px 6px; text-align: center; border-radius: 4px;
+  color: var(--navy);
+}
+.hm-cell.h { background: var(--bg-2); color: var(--txt-3); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.hm-cell.l { background: transparent; text-align: left; color: var(--txt-2); padding-left: 0; font-weight: 600; }
+.hm-cell.g0 { background: var(--teal-l); color: var(--teal-d); }
+.hm-cell.g1 { background: rgba(245,158,11,.18); color: var(--amber); }
+.hm-cell.g2 { background: rgba(220,38,38,.16); color: var(--crimson); }
+.hm-cell.g3 { background: var(--bg-2); color: var(--txt-4); }
+
+/* Trend bars */
+.trend-bars { display: flex; gap: 3px; align-items: flex-end; height: 80px; padding: 6px 0; }
+.trend-bars .b {
+  flex: 1; min-width: 8px; background: var(--teal-l); border-radius: 3px 3px 0 0;
+  position: relative;
+}
+.trend-bars .b > i {
+  position: absolute; bottom: 0; left: 0; right: 0; background: var(--teal);
+  border-radius: 3px 3px 0 0; transition: height .4s ease;
+}
+
+/* Reflection */
+.reflection textarea {
+  width: 100%; min-height: 100px; padding: 12px; border-radius: 10px;
+  border: 1px solid var(--border); font-family: 'Syne', sans-serif; font-size: 13px;
+  resize: vertical; color: var(--navy); background: var(--bg);
+}
+.reflection textarea:focus { outline: 2px solid rgba(0,200,150,.4); outline-offset: -1px; border-color: var(--teal); }
+
+/* xAPI trace */
+.xapi-line {
+  display: grid; grid-template-columns: 70px 1fr auto; gap: 8px; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+}
+.xapi-line:last-child { border-bottom: 0; }
+.xapi-line .ts { color: var(--txt-3); font-size: 9.5px; }
+.xapi-line .stmt { color: var(--navy); }
+.xapi-line .stmt .verb { color: var(--teal-d); font-weight: 600; }
+.xapi-line .pol { font-size: 9px; padding: 2px 8px; border-radius: 3px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.xapi-line .pol.good { background: var(--teal-l); color: var(--teal-d); }
+.xapi-line .pol.warn { background: var(--amber-l); color: var(--amber); }
+.xapi-line .pol.bad { background: var(--crimson-l); color: var(--crimson); }
+
+/* Validity strip */
+.validity {
+  background: var(--amber-l); border: 1px solid rgba(245,158,11,.3); border-radius: 8px;
+  padding: 10px 14px; font-size: 12px; color: var(--navy); margin-bottom: 18px;
+  display: flex; gap: 10px; align-items: center;
+}
+.validity .lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber);
+}
+
+/* fade up entrance */
+.fade-up { animation: fadeUp .35s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* utility */
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hide { display: none !important; }
+.flex-1 { flex: 1; }
+.center { text-align: center; }
+
+/* Reflection footer note */
+.foot-note {
+  font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--txt-4);
+  letter-spacing: 0.14em; text-transform: uppercase; text-align: center; margin-top: 28px;
+}
+</style>
+</head>
+<body>
+
+<!-- ========= STICKY HEADER ========= -->
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#FF6B35"/><stop offset="1" stop-color="#00C896"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0BBCD4"/><stop offset="1" stop-color="#00C896"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#FF6B35"/>
+        </linearGradient>
+        <linearGradient id="g4" x1="1" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#00A87A"/><stop offset="1" stop-color="#0BBCD4"/>
+        </linearGradient>
+      </defs>
+      <polygon points="16,4 28,16 16,16" fill="url(#g1)"/>
+      <polygon points="28,16 16,28 16,16" fill="url(#g2)"/>
+      <polygon points="16,28 4,16 16,16" fill="url(#g3)"/>
+      <polygon points="4,16 16,4 16,16" fill="url(#g4)"/>
+      <line x1="16" y1="2" x2="16" y2="30" stroke="#fff" stroke-width="0.6"/>
+      <line x1="2" y1="16" x2="30" y2="16" stroke="#fff" stroke-width="0.6"/>
+      <circle cx="16" cy="3" r="1.4" fill="#FF6B35"/>
+      <circle cx="29" cy="16" r="1.4" fill="#00C896"/>
+      <circle cx="16" cy="29" r="1.4" fill="#7C3AED"/>
+      <circle cx="3" cy="16" r="1.4" fill="#0BBCD4"/>
+    </svg>
+    <div class="wordmark">AIWIZN<span class="tag" style="margin-left: 8px;">POC PHASE 3</span></div>
+  </div>
+  <div class="crumbs">
+    <span>OVERVIEW</span><span class="sep">/</span>
+    <span class="active" id="crumbActive">JC 2026 SCENARIO</span><span class="sep">/</span>
+    <span>PERSONA</span><span class="sep">/</span>
+    <span>LUMINA</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div class="db-pill" id="dbPill" title="Supabase project · scyfldezhztapttcyenr">
+      <span class="db-dot" id="dbDot"></span>
+      <span id="dbText">connecting…</span>
+    </div>
+    <div class="live">LIVE</div>
+  </div>
+</header>
+
+<!-- Toast container -->
+<div id="toastWrap" style="position:fixed;bottom:18px;right:18px;z-index:300;display:flex;flex-direction:column;gap:8px;pointer-events:none;"></div>
+
+<div class="layout">
+  <!-- ========= SIDEBAR ========= -->
+  <aside class="sidebar">
+    <div class="side-section">
+      <div class="label">Engine</div>
+      <div class="side-link active" onclick="scrollTo_('overview')"><span class="dot"></span><span>Overview</span></div>
+      <div class="side-link" onclick="scrollTo_('scenario')"><span class="dot"></span><span>JC 2026 Scenario</span><span class="sub">5</span></div>
+      <div class="side-link" onclick="scrollTo_('persona')"><span class="dot"></span><span>PERSONA</span></div>
+      <div class="side-link" onclick="scrollTo_('lumina')"><span class="dot"></span><span>LUMINA</span></div>
+    </div>
+
+    <div class="side-section">
+      <div class="label">Scenes</div>
+      <div class="side-link" onclick="scrollTo_('scene-1')"><span class="dot"></span><span>1.1 Handoff</span><span class="sub">ID</span></div>
+      <div class="side-link" onclick="scrollTo_('scene-2')"><span class="dot"></span><span>1.2 Anticoag</span><span class="sub">MED</span></div>
+      <div class="side-link" onclick="scrollTo_('scene-3')"><span class="dot"></span><span>1.3 High-Risk</span><span class="sub">SUI</span></div>
+      <div class="side-link" onclick="scrollTo_('scene-4')"><span class="dot"></span><span>1.4 WPV</span><span class="sub">WPV</span></div>
+      <div class="side-link" onclick="scrollTo_('scene-5')"><span class="dot"></span><span>1.5 Equity</span><span class="sub">EQ</span></div>
+    </div>
+
+    <div class="side-section">
+      <div class="label">Agents</div>
+      <div class="side-link"><span class="dot" style="background:var(--cyan)"></span><span>SIMULUS</span><span class="sub">state</span></div>
+      <div class="side-link"><span class="dot" style="background:var(--purple)"></span><span>COGNITA</span><span class="sub">BKT</span></div>
+      <div class="side-link"><span class="dot" style="background:var(--orange)"></span><span>RESONANCE</span><span class="sub">debrief</span></div>
+      <div class="side-link"><span class="dot" style="background:var(--amber)"></span><span>GOLDILOCKS</span><span class="sub">stub</span></div>
+    </div>
+
+    <div class="side-section">
+      <div class="label">Status</div>
+      <div style="padding: 8px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--txt-3); line-height: 1.7;">
+        SIMULUS · :8080<br>COGNITA · :8090<br>RESONANCE · :8100<br>LUMINA · :3000<br>
+        <span style="color:var(--teal-d); font-weight:700;">▌ all green</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========= MAIN ========= -->
+  <main class="main">
+
+    <div class="validity">
+      <span class="lbl">Validity Gate</span>
+      <span><strong>Formative-only.</strong> COGNITA outputs from this scenario are not eligible for high-stakes use until construct-validity (CFA) study completes.</span>
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section id="overview">
+      <div class="hero fade-up">
+        <svg class="compass" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6B35"/><stop offset="1" stop-color="#00C896"/></linearGradient>
+            <linearGradient id="cg2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0BBCD4"/><stop offset="1" stop-color="#00C896"/></linearGradient>
+            <linearGradient id="cg3" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#FF6B35"/></linearGradient>
+            <linearGradient id="cg4" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#00A87A"/><stop offset="1" stop-color="#0BBCD4"/></linearGradient>
+          </defs>
+          <polygon points="50,12 88,50 50,50" fill="url(#cg1)" opacity="0.9"/>
+          <polygon points="88,50 50,88 50,50" fill="url(#cg2)" opacity="0.9"/>
+          <polygon points="50,88 12,50 50,50" fill="url(#cg3)" opacity="0.9"/>
+          <polygon points="12,50 50,12 50,50" fill="url(#cg4)" opacity="0.9"/>
+          <line x1="50" y1="6" x2="50" y2="94" stroke="#fff" stroke-width="1.2"/>
+          <line x1="6" y1="50" x2="94" y2="50" stroke="#fff" stroke-width="1.2"/>
+          <circle cx="50" cy="9" r="2.8" fill="#FF6B35"/><circle cx="91" cy="50" r="2.8" fill="#00C896"/>
+          <circle cx="50" cy="91" r="2.8" fill="#7C3AED"/><circle cx="9" cy="50" r="2.8" fill="#0BBCD4"/>
+        </svg>
+        <h1>Patient ID. Med Safety. Suicide Risk.<br><em>The Compliance Gaps That Decide Your Survey.</em></h1>
+        <p class="lede">
+          One scenario, five phases, six 2026 National Performance Goals. Every decision tracked by COGNITA and synthesized into a survey-ready PERSONA profile. Built for the nurse who will face the surveyor tomorrow.
+        </p>
+        <div class="arch-callout">
+          <span>Session Architecture</span>
+          <div class="progress"><i id="overallProgress" style="width:0%"></i></div>
+          <span class="label">1 SCENARIO · 5 PHASES · 6 NPG DOMAINS</span>
+        </div>
+      </div>
+
+      <div class="ov-grid">
+        <div class="ov-card teal" onclick="scrollTo_('scenario')">
+          <div class="ov-num">01</div>
+          <div class="ov-id">Scenario 1 · Med-Surg · POD1</div>
+          <div class="ov-title">Survey Day — <em>Bed 4</em></div>
+          <div class="badges">
+            <span class="badge">NPG 1</span><span class="badge">NPG 14</span><span class="badge crimson">High-Risk</span><span class="badge amber">NPG 2a</span><span class="badge purple">Equity</span>
+          </div>
+          <div class="meta">5 phases · Anticoag · Suicide screen · WPV · HRSN closed-loop</div>
+        </div>
+        <div class="ov-card crimson">
+          <div class="ov-num">SE</div>
+          <div class="ov-id">Sentinel-Risk Watch</div>
+          <div class="ov-title">Wrong patient · supra-INR · ligature</div>
+          <div class="badges"><span class="badge crimson">3 traps</span><span class="badge navy">seeded errors</span></div>
+          <div class="meta">Each phase plants one canonical compliance trap.</div>
+        </div>
+        <div class="ov-card amber">
+          <div class="ov-num">DR</div>
+          <div class="ov-id">Distractor Load</div>
+          <div class="ov-title">Call-light · pages · minor translator</div>
+          <div class="badges"><span class="badge amber">3 distractors</span></div>
+          <div class="meta">Realistic interruption density for an advanced-beginner.</div>
+        </div>
+        <div class="ov-card purple">
+          <div class="ov-num">RT</div>
+          <div class="ov-id">Retest · 30-day</div>
+          <div class="ov-title">Unannounced regression check</div>
+          <div class="badges"><span class="badge purple">scheduled</span></div>
+          <div class="meta">CONTINUUM-tracked. Posterior decay modeled.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENARIO ============ -->
+    <section id="scenario">
+      <div class="section-meta">Scenario 01 · Joint Commission 2026 Readiness · jc2026-readiness-shift-001</div>
+      <div class="row-between" style="margin-bottom: 12px;">
+        <h2>Bed 4 — <span class="serif-i" style="color:var(--teal-d);">"My head's pounding and my chest feels tight"</span></h2>
+        <div class="row">
+          <span class="badge">advanced-beginner</span>
+          <span class="badge navy">18 min · 5 phases</span>
+          <span class="badge purple">10 ECD constructs</span>
+        </div>
+      </div>
+
+      <!-- CONTINUUM phase tracker -->
+      <div class="continuum" id="continuum"></div>
+
+      <!-- ============ SCENE 1 — Handoff ============ -->
+      <div class="scene fade-up" id="scene-1">
+        <div class="scene-head">
+          <span class="scene-id">Scene 1.1 · D-01 · NPG 1</span>
+          <span class="scene-title">Initial bedside handoff — similar-named patient next door</span>
+          <span class="badge">handoff</span>
+        </div>
+        <div class="scene-body">
+          <div class="env-hero" style="background-image: linear-gradient(135deg, #ddeeff, #e8f3fa), url('https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1200&q=80'); background-blend-mode: overlay;">
+            <div class="env-overlay">
+              <div class="env-tag">Med-Surg · 4 East · Bed 412A</div>
+              <div class="env-title">Diane <em>Holloway</em>. Diane <em>Holland</em>. Same DOB month.</div>
+            </div>
+          </div>
+
+          <div class="situation">
+            <div class="label">Situation · POD1 lap chole</div>
+            <div class="body">
+              Night-shift hands off Diane Holloway in 412A. <strong>Mrs. Holland</strong> is in 412B, same DOB month. Night nurse documented "uneventful, afebrile." MAR has evening warfarin queued, hydromorphone PRN, and a pending INR. Night nurse pages: <em>"I'll text you the SBAR after — handoff easier that way."</em>
+            </div>
+          </div>
+
+          <div class="monitor-wrap">
+            <div class="monitor-head">
+              <span class="title">Vitals · 5Hz · SIMULUS</span>
+              <span class="news2">NEWS2 <span class="score" id="news2-1">3</span> · stable · low escalate</span>
+            </div>
+            <div class="vitals-grid" id="vitals-1"></div>
+            <div class="ecg-strip">
+              <div class="ecg-label">Sinus · 92 bpm</div>
+              <svg viewBox="0 0 600 60"><polyline class="ecg-line" points="0,30 40,30 50,28 60,15 70,42 80,28 90,30 130,30 140,28 150,15 160,42 170,28 180,30 220,30 230,28 240,15 250,42 260,28 270,30 310,30 320,28 330,15 340,42 350,28 360,30 400,30 410,28 420,15 430,42 440,28 450,30 490,30 500,28 510,15 520,42 530,28 540,30 600,30"/></svg>
+            </div>
+          </div>
+
+          <div class="ehr-row">
+            <div class="ehr-cell"><div class="l">Wristband</div><div class="v">D. HOLLOWAY · DOB 03/22/1972</div></div>
+            <div class="ehr-cell"><div class="l">Neighbor</div><div class="v">412B · M. Holland · DOB 03/15/1973</div></div>
+            <div class="ehr-cell"><div class="l">Allergies</div><div class="v">NKDA</div></div>
+          </div>
+
+          <div class="dec">
+            <div class="dec-head"><span class="dot"></span><span class="label">Decision Node D-01</span><span class="id">authority · workflow</span></div>
+            <div class="dec-body">
+              You are about to scan and administer the patient's <b>scheduled hydromorphone PRN</b>. The wristband is on; the night nurse just left.
+              <span class="quote">"I'm Mrs. Holloway, the H-O-double-L. There's been some mix-up before with the other one."</span>
+            </div>
+            <div class="choices" id="choices-1"></div>
+            <div class="dec-signal">▌ COGNITA observing · clinical-judgment.noticing · med-safety.general · communication.sbar</div>
+          </div>
+
+          <div id="fb-1"></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 2 — Anticoag ============ -->
+      <div class="scene crimson fade-up" id="scene-2">
+        <div class="scene-head">
+          <span class="scene-id">Scene 1.2 · D-02 · NPG 14</span>
+          <span class="scene-title">INR returns supra-therapeutic — evening warfarin due</span>
+          <span class="badge crimson">high-alert</span>
+        </div>
+        <div class="scene-body">
+          <div class="env-hero" style="background-image: linear-gradient(135deg, #fff0e8, #ffe8e0), url('https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=1200&q=80'); background-blend-mode: overlay;">
+            <div class="env-overlay">
+              <div class="env-tag" style="color:#FFC4A8;">High-Alert · NPG 14 · Anticoagulant</div>
+              <div class="env-title">INR <em>4.2</em>. Target 2.0–3.0. Warfarin due in nine minutes.</div>
+            </div>
+          </div>
+
+          <div class="simulus-alert">
+            <span class="lbl">⚠ SIMULUS · LAB-RESULT</span>
+            <span><b>INR 4.2</b> returned at 18:02. Supra-therapeutic. Provider not yet notified. Evening warfarin order is still active in MAR.</span>
+          </div>
+
+          <div class="monitor-wrap">
+            <div class="monitor-head">
+              <span class="title">Vitals · 5Hz · SIMULUS</span>
+              <span class="news2">NEWS2 <span class="score" id="news2-2">3</span> · stable · low escalate</span>
+            </div>
+            <div class="vitals-grid" id="vitals-2"></div>
+            <div class="ecg-strip">
+              <div class="ecg-label">Sinus · 96 bpm</div>
+              <svg viewBox="0 0 600 60"><polyline class="ecg-line" points="0,30 40,30 50,28 60,15 70,42 80,28 90,30 130,30 140,28 150,15 160,42 170,28 180,30 220,30 230,28 240,15 250,42 260,28 270,30 310,30 320,28 330,15 340,42 350,28 360,30 400,30 410,28 420,15 430,42 440,28 450,30 490,30 500,28 510,15 520,42 530,28 540,30 600,30"/></svg>
+            </div>
+          </div>
+
+          <div class="ehr-row">
+            <div class="ehr-cell"><div class="l">Lab · INR</div><div class="v" style="color:var(--crimson);">4.2 · supra-therapeutic</div></div>
+            <div class="ehr-cell"><div class="l">Order</div><div class="v">Warfarin 5 mg PO q-eve</div></div>
+            <div class="ehr-cell"><div class="l">MAR</div><div class="v" style="color:var(--amber);">DUE NOW · not held</div></div>
+          </div>
+
+          <div class="dec">
+            <div class="dec-head" style="background: var(--crimson-l); border-bottom-color: rgba(220,38,38,.2);">
+              <span class="dot" style="background:var(--crimson); box-shadow:0 0 8px var(--crimson);"></span>
+              <span class="label" style="color:var(--crimson);">Decision Node D-02</span><span class="id">high-alert · NPG 14</span>
+            </div>
+            <div class="dec-body">
+              The patient asks: <span class="quote">"Should I still take the blood thinner tonight? My head's still pounding."</span>
+            </div>
+            <div class="choices" id="choices-2"></div>
+            <div class="dec-signal">▌ COGNITA observing · med-safety.high-alert · clinical-judgment.responding · communication.sbar</div>
+          </div>
+
+          <div id="fb-2"></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 3 — High-risk ============ -->
+      <div class="scene purple fade-up" id="scene-3">
+        <div class="scene-head">
+          <span class="scene-id">Scene 1.3 · D-03 · High-Risk NPG</span>
+          <span class="scene-title">Patient discloses ideation — environment review needed</span>
+          <span class="badge purple">suicide-risk</span>
+        </div>
+        <div class="scene-body">
+          <div class="env-hero" style="background-image: linear-gradient(135deg, #f0e8ff, #ece0ff), url('https://images.unsplash.com/photo-1551076805-e1869033e561?w=1200&q=80'); background-blend-mode: overlay;">
+            <div class="env-overlay">
+              <div class="env-tag" style="color:#D4BCFF;">High-Risk NPG · Validated screen required</div>
+              <div class="env-title">PHQ-2 positive on admit. <em>Columbia not yet performed.</em></div>
+            </div>
+          </div>
+
+          <div class="situation" style="border-left-color: var(--purple);">
+            <div class="label" style="color:var(--purple);">Disclosure · while changing IV bag</div>
+            <div class="body">She goes quiet, then says, in passing — <strong>"I just want this to stop."</strong> The room has standard fixtures: closet rod, plastic trash-bag liner, IV pole.</div>
+          </div>
+
+          <div class="monitor-wrap">
+            <div class="monitor-head">
+              <span class="title">Vitals · 5Hz · SIMULUS</span>
+              <span class="news2">NEWS2 <span class="score warn" id="news2-3">5</span> · rising · medium escalate</span>
+            </div>
+            <div class="vitals-grid" id="vitals-3"></div>
+            <div class="ecg-strip">
+              <div class="ecg-label fast">Sinus tach · 108 bpm</div>
+              <svg viewBox="0 0 600 60"><polyline class="ecg-line fast" points="0,30 30,30 38,28 46,15 54,42 62,28 70,30 100,30 108,28 116,15 124,42 132,28 140,30 170,30 178,28 186,15 194,42 202,28 210,30 240,30 248,28 256,15 264,42 272,28 280,30 310,30 318,28 326,15 334,42 342,28 350,30 380,30 388,28 396,15 404,42 412,28 420,30 450,30 458,28 466,15 474,42 482,28 490,30 520,30 528,28 536,15 544,42 552,28 560,30 600,30"/></svg>
+            </div>
+          </div>
+
+          <div class="ehr-row">
+            <div class="ehr-cell"><div class="l">PHQ-2</div><div class="v" style="color:var(--amber);">POSITIVE (admit)</div></div>
+            <div class="ehr-cell"><div class="l">Columbia C-SSRS</div><div class="v" style="color:var(--crimson);">NOT PERFORMED</div></div>
+            <div class="ehr-cell"><div class="l">Environment</div><div class="v">STANDARD med-surg</div></div>
+          </div>
+
+          <div class="dec">
+            <div class="dec-head" style="background: var(--purple-l); border-bottom-color: rgba(124,58,237,.2);">
+              <span class="dot" style="background:var(--purple); box-shadow: 0 0 8px var(--purple);"></span>
+              <span class="label" style="color:var(--purple);">Decision Node D-03</span><span class="id">high-risk · validated screen</span>
+            </div>
+            <div class="dec-body">
+              <span class="quote">"Don't tell my family. I just want this to stop. The pounding, all of it."</span>
+            </div>
+            <div class="choices" id="choices-3"></div>
+            <div class="dec-signal">▌ COGNITA observing · clinical-judgment.interpreting · clinical-judgment.responding · communication.therapeutic</div>
+          </div>
+
+          <div id="fb-3"></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 4 — WPV ============ -->
+      <div class="scene amber fade-up" id="scene-4">
+        <div class="scene-head">
+          <span class="scene-id">Scene 1.4 · D-04 · NPG 2a</span>
+          <span class="scene-title">Visitor escalation — verbal threat to clerk</span>
+          <span class="badge amber">workplace-violence</span>
+        </div>
+        <div class="scene-body">
+          <div class="env-hero" style="background-image: linear-gradient(135deg, #fff5e0, #ffefcc), url('https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1200&q=80'); background-blend-mode: overlay;">
+            <div class="env-overlay">
+              <div class="env-tag" style="color:#FFD89A;">NPG 2a · Workplace Violence</div>
+              <div class="env-title">"Just verbal so far. <em>You want the WPV process or hold off?"</em></div>
+            </div>
+          </div>
+
+          <div class="cognita-trace">
+            <b>COGNITA · context-shift</b> · cohort lift on NPG 2a — under-reporting visible across unit cohort. <b>n_evidence = 7</b>, p_mastered drifting to 0.42.
+          </div>
+
+          <div class="dec">
+            <div class="dec-head" style="background: var(--amber-l); border-bottom-color: rgba(245,158,11,.2);">
+              <span class="dot" style="background:var(--amber); box-shadow: 0 0 8px var(--amber);"></span>
+              <span class="label" style="color:var(--amber);">Decision Node D-04</span><span class="id">WPV · governance loop</span>
+            </div>
+            <div class="dec-body">
+              Charge calls: a visitor in the waiting area <b>verbally threatened</b> a registration clerk after a long wait. No physical contact yet. Security en route. Charge wants your call.
+              <span class="quote">"(charge nurse, on phone) — Just verbal so far. You want the WPV process or hold off?"</span>
+            </div>
+            <div class="choices" id="choices-4"></div>
+            <div class="dec-signal">▌ COGNITA observing · communication.sbar · prioritization · documentation</div>
+          </div>
+
+          <div id="fb-4"></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENE 5 — Equity ============ -->
+      <div class="scene orange fade-up" id="scene-5">
+        <div class="scene-head">
+          <span class="scene-id">Scene 1.5 · D-05 · Health Equity NPG</span>
+          <span class="scene-title">Discharge planning — housing and medication-cost insecurity</span>
+          <span class="badge orange">HRSN</span>
+        </div>
+        <div class="scene-body">
+          <div class="env-hero" style="background-image: linear-gradient(135deg, #ffe8d6, #ffded0), url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80'); background-blend-mode: overlay;">
+            <div class="env-overlay">
+              <div class="env-tag" style="color:#FFCAB0;">Health Equity NPG · Closed-loop referral</div>
+              <div class="env-title">Skipped warfarin twice last week. <em>"Between places."</em></div>
+            </div>
+          </div>
+
+          <div class="situation" style="border-left-color: var(--orange);">
+            <div class="label" style="color:var(--orange-d);">HRSN signals · interpreter scene</div>
+            <div class="body">Through a qualified medical interpreter, Diane mentions she's been "between places" for three months and skipped warfarin twice last week to pay rent. Her son (10 yo) offers to translate the rest "to save time."</div>
+          </div>
+
+          <div class="ehr-row">
+            <div class="ehr-cell"><div class="l">HRSN Status</div><div class="v" style="color:var(--crimson);">INCOMPLETE</div></div>
+            <div class="ehr-cell"><div class="l">Housing</div><div class="v" style="color:var(--amber);">UNSTABLE · 3 mo</div></div>
+            <div class="ehr-cell"><div class="l">Med affordability</div><div class="v" style="color:var(--amber);">SKIPPED 2× warfarin</div></div>
+          </div>
+
+          <div class="dec">
+            <div class="dec-head" style="background: var(--orange-l); border-bottom-color: rgba(255,107,53,.2);">
+              <span class="dot" style="background:var(--orange); box-shadow: 0 0 8px var(--orange);"></span>
+              <span class="label" style="color:var(--orange-d);">Decision Node D-05</span><span class="id">equity · closed-loop</span>
+            </div>
+            <div class="dec-body">
+              <span class="quote">"I can do the talking, my mom's tired — I'm good at translating for her."</span>
+            </div>
+            <div class="choices" id="choices-5"></div>
+            <div class="dec-signal">▌ COGNITA observing · communication.therapeutic · clinical-judgment.responding · documentation</div>
+          </div>
+
+          <div id="fb-5"></div>
+        </div>
+      </div>
+
+      <div class="row-between" style="margin-top: 14px;">
+        <button class="btn ghost" onclick="resetScenario()">↻ Reset</button>
+        <button class="btn" id="endBtn" onclick="endScenario()">End Scenario · PERSONA →</button>
+      </div>
+    </section>
+
+    <!-- ============ PERSONA ============ -->
+    <section id="persona">
+      <div class="section-meta">PERSONA Synthesis · post-scenario reflection</div>
+      <h2>PERSONA — placement-ready clinical profile</h2>
+      <p class="muted" style="margin: 4px 0 16px;">RESONANCE compiles COGNITA posteriors + decision trace into a single profile. Used by educators for placement and remediation.</p>
+
+      <div class="persona-terminal">
+        <div class="pt-head">PERSONA · <span id="personaName">— enter learner —</span></div>
+        <div class="pt-meta" id="personaMeta">jc2026-readiness-shift-001 · awaiting close</div>
+        <div id="personaBody">
+          <div class="row" style="padding:6px 0;"><span class="k" style="min-width:240px;">▌ status</span><span class="v">awaiting scenario close</span></div>
+        </div>
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px;">
+          <span style="color:var(--txt-4); letter-spacing:0.18em; text-transform:uppercase;">NWI · Nurse Wisdom Index</span><br>
+          <span class="nwi" id="personaNwi" style="margin-top: 6px;">— AWAITING —</span>
+        </div>
+      </div>
+
+      <div class="dash-panel reflection" style="margin-top: 14px;">
+        <div class="panel-head"><h3>Post-session reflection</h3><span class="panel-tag">RESONANCE prompt</span></div>
+        <p class="muted">Capture one moment that surprised you and one habit you'll change next shift.</p>
+        <textarea id="reflectionInput" placeholder="The moment I noticed she was Mrs. Holloway not Mrs. Holland was when…"></textarea>
+        <div style="margin-top: 8px;"><button class="btn" onclick="saveReflection()">Save reflection</button></div>
+      </div>
+    </section>
+
+    <!-- ============ LUMINA DASHBOARD ============ -->
+    <section id="lumina">
+      <div class="section-meta">LUMINA · Educator Dashboard · live</div>
+      <div class="row-between" style="margin-bottom: 6px;">
+        <h2>LUMINA — survey-readiness telemetry</h2>
+        <div class="row">
+          <button class="btn ghost" onclick="exportData('csv')">Export CSV</button>
+          <button class="btn ghost" onclick="exportData('json')">Export JSON</button>
+        </div>
+      </div>
+      <p class="muted" style="margin: 4px 0 16px;">Cohort-level rollup with this learner's session merged in. Disparity-stratified per Health Equity NPG.</p>
+
+      <!-- KPI grid -->
+      <div class="dash-grid">
+        <div class="stat-card">
+          <div class="lbl">Total Sessions</div>
+          <div class="val" id="kTotal">147</div>
+          <div class="sub">last 30 days</div>
+          <div class="trend">▲ 12% vs prior</div>
+        </div>
+        <div class="stat-card cyan">
+          <div class="lbl">Expert Choices</div>
+          <div class="val cyan" id="kExpert">—</div>
+          <div class="sub">% positive · this session</div>
+          <div class="trend" id="kExpertTrend">awaiting</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="lbl">Gap Flags</div>
+          <div class="val amber" id="kGap">—</div>
+          <div class="sub">red domains · this session</div>
+          <div class="trend down" id="kGapTrend">awaiting</div>
+        </div>
+        <div class="stat-card crimson">
+          <div class="lbl">NWI · Avg cohort</div>
+          <div class="val crimson" id="kNwi">—</div>
+          <div class="sub">avg this learner / cohort</div>
+          <div class="trend" id="kNwiTrend">awaiting</div>
+        </div>
+      </div>
+
+      <!-- 2-col layout -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="lumina-cols">
+        <div class="dash-panel">
+          <div class="panel-head"><h3>Domain readiness · this learner</h3><span class="panel-tag">COGNITA snapshot</span></div>
+          <div id="domainList"></div>
+        </div>
+        <div class="dash-panel">
+          <div class="panel-head"><h3>Recent sessions · cohort</h3><span class="panel-tag">last 5</span></div>
+          <div id="sessionList">
+            <div class="session-row"><div class="av">JR</div><div><div class="name">Jamie Rivera, RN</div><div class="meta">jc2026 · 18 min · today</div></div><div></div><span class="cci">CCI 0.84</span></div>
+            <div class="session-row"><div class="av amber">SK</div><div><div class="name">Sara Kim, RN</div><div class="meta">jc2026 · 17 min · today</div></div><div></div><span class="cci amber">CCI 0.71</span></div>
+            <div class="session-row"><div class="av">MA</div><div><div class="name">Marcus Adams, RN</div><div class="meta">jc2026 · 19 min · today</div></div><div></div><span class="cci">CCI 0.88</span></div>
+            <div class="session-row"><div class="av crimson">PT</div><div><div class="name">Priya Tan, RN</div><div class="meta">jc2026 · 21 min · today</div></div><div></div><span class="cci crimson">CCI 0.58</span></div>
+            <div class="session-row"><div class="av amber">ER</div><div><div class="name">Elena Reyes, RN</div><div class="meta">jc2026 · 18 min · today</div></div><div></div><span class="cci amber">CCI 0.69</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trend + Heatmap -->
+      <div style="display:grid; grid-template-columns: 1fr 1.4fr; gap: 14px;" class="lumina-cols">
+        <div class="dash-panel">
+          <div class="panel-head"><h3>NWI trend · 14 days</h3><span class="panel-tag">cohort</span></div>
+          <div class="trend-bars" id="trendBars"></div>
+          <div class="row-between" style="font-family:'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); letter-spacing: 0.12em; margin-top: 4px;">
+            <span>D-13</span><span>D-7</span><span>TODAY</span>
+          </div>
+        </div>
+        <div class="dash-panel">
+          <div class="panel-head"><h3>Gap heatmap · domain × scene</h3><span class="panel-tag">cohort, n=147</span></div>
+          <div class="hm-grid">
+            <div class="hm-cell h"></div>
+            <div class="hm-cell h">S1.1</div><div class="hm-cell h">S1.2</div><div class="hm-cell h">S1.3</div><div class="hm-cell h">S1.4</div><div class="hm-cell h">S1.5</div>
+
+            <div class="hm-cell l">Patient ID (NPG 1)</div>
+            <div class="hm-cell g1">28%</div><div class="hm-cell g0">12%</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div>
+
+            <div class="hm-cell l">Med Safety (NPG 14)</div>
+            <div class="hm-cell g3">—</div><div class="hm-cell g2">42%</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div>
+
+            <div class="hm-cell l">Suicide Risk (HR)</div>
+            <div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g2">39%</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div>
+
+            <div class="hm-cell l">WPV (NPG 2a)</div>
+            <div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g2">58%</div><div class="hm-cell g3">—</div>
+
+            <div class="hm-cell l">Equity / HRSN</div>
+            <div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g3">—</div><div class="hm-cell g1">33%</div>
+
+            <div class="hm-cell l">Culture / Handoff</div>
+            <div class="hm-cell g1">22%</div><div class="hm-cell g0">14%</div><div class="hm-cell g0">9%</div><div class="hm-cell g0">11%</div><div class="hm-cell g0">8%</div>
+          </div>
+          <div class="row" style="margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--txt-3); letter-spacing: 0.12em;">
+            <span class="hm-cell g0" style="padding: 3px 8px;">≤ 20%</span>
+            <span class="hm-cell g1" style="padding: 3px 8px;">21–35%</span>
+            <span class="hm-cell g2" style="padding: 3px 8px;">&gt; 35% miss</span>
+            <span style="margin-left: auto;">cohort gap rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- xAPI trace -->
+      <div class="dash-panel">
+        <div class="panel-head"><h3>xAPI decision trace · this session</h3><span class="panel-tag">SIMULUS → COGNITA</span></div>
+        <div id="traceList"><p class="muted">No envelopes yet — make a decision in Scene 1.1 to populate.</p></div>
+      </div>
+
+      <!-- Evidence -->
+      <div class="dash-panel">
+        <div class="panel-head"><h3>Evidence base · scenario references</h3><span class="panel-tag">approved</span></div>
+        <ul style="font-size: 11.5px; color: var(--txt-2); line-height: 1.7; padding-left: 18px;" id="evList"></ul>
+      </div>
+
+      <p class="foot-note">SIMULUS owns clinical state · Unity renders it · COGNITA observes · RESONANCE responds · LUMINA reports · ATEN, INC · AIWIZN POC PHASE 3</p>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   AIWIZN JC 2026 — wired to live engine UX
+   ============================================================ */
+
+/* ECD construct refs — match cognita/src/cognita/bkn.py */
+const CONSTRUCTS = [
+  "clinical-judgment.noticing","clinical-judgment.interpreting","clinical-judgment.responding",
+  "med-safety.high-alert","med-safety.general","communication.sbar","communication.therapeutic",
+  "safety.infection-prevention","prioritization","documentation"
+];
+
+/* Vitals base set per scene (drift simulated) */
+const VITALS_BY_SCENE = {
+  1: { hr:98, sbp:156, dbp:94, rr:18, spo2:95, temp:37.1, inr:4.2, news:3, hrTag:'', sbpTag:'warn' },
+  2: { hr:96, sbp:150, dbp:92, rr:18, spo2:96, temp:37.0, inr:4.2, news:3, hrTag:'', sbpTag:'warn' },
+  3: { hr:108, sbp:160, dbp:98, rr:20, spo2:96, temp:37.1, inr:4.2, news:5, hrTag:'warn', sbpTag:'warn' },
+  4: { hr:104, sbp:154, dbp:94, rr:18, spo2:96, temp:37.0, inr:4.2, news:5, hrTag:'warn', sbpTag:'warn' },
+  5: { hr:96, sbp:142, dbp:88, rr:18, spo2:97, temp:37.0, inr:4.2, news:4, hrTag:'', sbpTag:'warn' },
+};
+
+/* Choices per decision node — verb:object xAPI envelopes */
+const SCENES = {
+  1: {
+    name: "handoff", id: "D-01", phase: "Handoff",
+    choices: [
+      { cid:"A", verb:"verified", object:"two-identifiers",
+        text:"Verify name + DOB against wristband, MAR, and patient stating own name.",
+        refs:["clinical-judgment.noticing","med-safety.general"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · strength pattern", head:"Two-identifier rule applied.",
+             body:"Name + DOB verified at the bedside before any orders are touched. With a similar-named patient on the unit, this is exactly the trap NPG 1 is written to prevent." } },
+      { cid:"B", verb:"observed", object:"wristband-only",
+        text:"Glance at wristband; defer DOB confirmation until med pass.",
+        refs:["med-safety.general"], score:0.5,
+        fb:{ tier:"warn", lbl:"RESONANCE · gap signal", head:"Wristband glance only.",
+             body:"Single-source confirmation. NPG 1 expects two patient-specific identifiers verified actively, especially with a similar-named patient nearby." } },
+      { cid:"C", verb:"reported", object:"sbar",
+        text:"Insist on a structured SBAR/I-PASS handoff at bedside; refuse text-only handoff.",
+        refs:["communication.sbar","prioritization"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · strength pattern", head:"Bedside structured handoff.",
+             body:"Bedside SBAR with active questions for a high-acuity patient is the gold standard under NPG 2." } },
+      { cid:"D", verb:"delayed", object:"text-only-handoff",
+        text:"Accept the text-only SBAR — the night nurse is busy.",
+        refs:["communication.sbar"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · NPG 2 · CRITICAL MISS", head:"Text-only handoff for high-acuity.",
+             body:"Critical context loss is the latent failure NPG 2 targets. Bedside, structured handoff is required." } },
+    ]
+  },
+  2: {
+    name: "anticoag", id: "D-02", phase: "Med Safety",
+    choices: [
+      { cid:"A", verb:"observed", object:"lab-result",
+        text:"Read and acknowledge the INR result; flag as supra-therapeutic.",
+        refs:["clinical-judgment.noticing"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · noticing", head:"Noticed.",
+             body:"Reading the value first is the difference between an event and a near-miss." } },
+      { cid:"B", verb:"communicated", object:"provider-call",
+        text:"Hold the dose, page the provider with the INR, document, and educate on bleeding precautions.",
+        refs:["med-safety.high-alert","clinical-judgment.responding","communication.sbar"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · NPG 14 ✓", head:"Anticoagulant management — by the book.",
+             body:"NPG 14 anticoagulant standards: standardized practice + monitoring + patient education. Hold + provider notification is correct." } },
+      { cid:"C", verb:"administered", object:"warfarin-supra-therapeutic",
+        text:"Administer the dose since she's stable and not bleeding.",
+        refs:["med-safety.high-alert"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · CONTRAINDICATED ORDER", head:"Critical miss.",
+             body:"INR 4.2 supra-therapeutic. Dosing without provider review violates NPG 14." } },
+      { cid:"D", verb:"delayed", object:"self-adjusted-dose",
+        text:"Reduce the dose by half on your own judgment and document.",
+        refs:["med-safety.high-alert"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · OUT OF SCOPE", head:"Independent dose adjustment.",
+             body:"Independent dose changes aren't within scope. Provider notification + education is the standardized path." } },
+    ]
+  },
+  3: {
+    name: "high-risk", id: "D-03", phase: "High-Risk",
+    choices: [
+      { cid:"A", verb:"assessed", object:"columbia-screen",
+        text:"Apply the validated Columbia Suicide Severity Rating Scale and document.",
+        refs:["clinical-judgment.interpreting","clinical-judgment.responding","communication.therapeutic"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · validated tool ✓", head:"Validated tool, applied at point of risk.",
+             body:"NPG high-risk care expects a validated screen — clinical impression alone is not sufficient." } },
+      { cid:"B", verb:"assessed", object:"ligature-environment",
+        text:"Conduct ligature-resistant environment review; remove hazards; place 1:1 observation.",
+        refs:["clinical-judgment.responding","prioritization"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · environment as treatment", head:"Environment safety + 1:1.",
+             body:"For at-risk patients on a non-BH unit, environment safety + 1:1 observation is non-negotiable." } },
+      { cid:"C", verb:"delayed", object:"clinical-impression-only",
+        text:"Document subjective impression and recheck in the morning.",
+        refs:["clinical-judgment.interpreting"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · SENTINEL-EVENT PATTERN", head:"Critical miss.",
+             body:"Patients in active distress need a validated screen NOW, not in the morning." } },
+      { cid:"D", verb:"educated", object:"lethal-means-counseling",
+        text:"Begin lethal-means counseling and start a documented safety plan.",
+        refs:["communication.therapeutic","clinical-judgment.responding"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · safety plan ✓", head:"Lethal-means counseling started.",
+             body:"Documented safety plan + 7-day follow-up plan is the standard." } },
+    ]
+  },
+  4: {
+    name: "wpv", id: "D-04", phase: "WPV",
+    choices: [
+      { cid:"A", verb:"reported", object:"wpv-incident",
+        text:"Initiate WPV report, support the clerk, document, and ensure follow-up to the governing body.",
+        refs:["communication.sbar","prioritization","documentation"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · NPG 2a ✓", head:"Right call across the board.",
+             body:"Formal report + support + governance loop — explicit NPG 2a expectation." } },
+      { cid:"B", verb:"delayed", object:"informal-only",
+        text:"Verbal-only — no formal report. Advise clerk to write it down informally.",
+        refs:["documentation"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · NPG 2a · UNDER-REPORT", head:"Critical miss.",
+             body:"NPG 2a's 2026 definition explicitly includes verbal threats. ALL of these require formal reporting." } },
+      { cid:"C", verb:"delayed", object:"wait-and-see",
+        text:"Wait to see if the behavior escalates before reporting.",
+        refs:["documentation"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · REACTIVE NOT PREVENTIVE", head:"Reactive, not preventive.",
+             body:"WPV programs depend on every event being reported. 'Wait and see' is exactly the under-reporting culture the standard targets." } },
+    ]
+  },
+  5: {
+    name: "equity", id: "D-05", phase: "Equity",
+    choices: [
+      { cid:"A", verb:"communicated", object:"qualified-interpreter",
+        text:"Decline the minor translator. Engage qualified medical interpreter and document language preference.",
+        refs:["communication.therapeutic","documentation"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · equity ✓", head:"Equitable communication restored.",
+             body:"Minor children cannot serve as medical interpreters. Health Equity NPG requires qualified interpreters." } },
+      { cid:"B", verb:"assessed", object:"hrsn-screen",
+        text:"Complete HRSN screen; flag housing instability + medication-cost insecurity.",
+        refs:["clinical-judgment.noticing","documentation"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · HRSN ✓", head:"HRSN surfaced.",
+             body:"Five HRSN domains: food, housing, transportation, utilities, interpersonal safety." } },
+      { cid:"C", verb:"communicated", object:"social-work-referral",
+        text:"Warm handoff to social work + pharmacy assistance program; document closed-loop referral.",
+        refs:["clinical-judgment.responding","communication.therapeutic","documentation"], score:1,
+        fb:{ tier:"good", lbl:"RESONANCE · closed-loop ✓", head:"Closed-loop equity care.",
+             body:"Medication insecurity is a top driver of preventable readmission. Closed-loop referral protects the outcome." } },
+      { cid:"D", verb:"delayed", object:"noted-only",
+        text:"Note in narrative; remind her to ask her PCP next visit.",
+        refs:["documentation"], score:0,
+        fb:{ tier:"bad", lbl:"⚠ SIMULUS · EQUITY · OPEN LOOP", head:"Surfaced, not acted.",
+             body:"Acknowledging insecurity without acting on it is the gap the NPG was written to close." } },
+    ]
+  }
+};
+
+/* ============================================================
+   COGNITA — exact mirror of cognita/src/cognita/bkn.py
+   prior 0.3 · slip 0.1 · guess 0.2 · learn 0.05
+   ============================================================ */
+class CB {
+  constructor(ref) { this.ref = ref; this.p = 0.3; this.n = 0; }
+  update(positive, slip = 0.1, guess = 0.2) {
+    const p = this.p; let p_obs, p_post;
+    if (positive) {
+      p_obs = p * (1 - slip) + (1 - p) * guess;
+      p_post = p_obs > 0 ? p * (1 - slip) / p_obs : p;
+    } else {
+      p_obs = p * slip + (1 - p) * (1 - guess);
+      p_post = p_obs > 0 ? p * slip / p_obs : p;
+    }
+    const learn = 0.05;
+    this.p = p_post + (1 - p_post) * learn;
+    this.n += 1;
+  }
+}
+class Stealth {
+  constructor() { this.beliefs = {}; }
+  observe(refs, positive) { for (const r of refs) { (this.beliefs[r] ||= new CB(r)).update(positive); } }
+  snap() { const o={}; for(const k in this.beliefs) o[k]={p:this.beliefs[k].p, n:this.beliefs[k].n}; return o; }
+}
+const cognita = new Stealth();
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  decisions: [],          // xAPI envelopes
+  consumed: { 1:new Set(), 2:new Set(), 3:new Set(), 4:new Set(), 5:new Set() },
+  phaseCompleted: { 1:false,2:false,3:false,4:false,5:false },
+  reflection: "",
+  learnerName: "Jamie Rivera, RN", // default; could prompt later
+  simStartMs: Date.now(),
+};
+
+// Expose on window so the Supabase module can read sim state
+window.state = state;
+window.cognita = cognita;
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderVitals(scene) {
+  const v = VITALS_BY_SCENE[scene];
+  const wrap = document.getElementById(`vitals-${scene}`);
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <div class="vital-box ${v.hrTag}"><div class="l">HR</div><div class="v">${v.hr}</div><div class="u">bpm</div></div>
+    <div class="vital-box ${v.sbpTag}"><div class="l">BP</div><div class="v">${v.sbp}/${v.dbp}</div><div class="u">mmHg</div></div>
+    <div class="vital-box"><div class="l">RR</div><div class="v">${v.rr}</div><div class="u">/min</div></div>
+    <div class="vital-box"><div class="l">SpO₂</div><div class="v">${v.spo2}</div><div class="u">% RA</div></div>
+    <div class="vital-box"><div class="l">Temp</div><div class="v">${v.temp.toFixed(1)}</div><div class="u">°C</div></div>
+    <div class="vital-box ${v.inr>3?'danger':''}"><div class="l">INR</div><div class="v">${v.inr}</div><div class="u">target 2-3</div></div>
+    <div class="vital-box warn"><div class="l">PHQ-2</div><div class="v">+</div><div class="u">screened</div></div>
+  `;
+}
+
+function renderChoices(scene) {
+  const wrap = document.getElementById(`choices-${scene}`);
+  if (!wrap) return;
+  const sc = SCENES[scene];
+  wrap.innerHTML = "";
+  sc.choices.forEach((c, i) => {
+    if (state.consumed[scene].has(i)) return;
+    const div = document.createElement("div");
+    div.className = "choice";
+    div.innerHTML = `<span class="cid">${c.cid}</span><span class="verb">${c.verb}:${c.object}</span><span class="text">${c.text}</span>`;
+    div.onclick = () => emit(scene, i);
+    wrap.appendChild(div);
+  });
+  if (wrap.children.length === 0) {
+    const sc = SCENES[scene];
+    wrap.innerHTML = `<div class="resonance-coach"><div class="lbl">▌ Phase complete · advance</div>Decision node ${sc.id} closed. ${scene<5?'Continue to Scene 1.'+(scene+1):'End scenario to launch PERSONA synthesis.'}</div>`;
+  }
+}
+
+function renderContinuum() {
+  const wrap = document.getElementById("continuum");
+  const labels = ["1.1 Handoff","1.2 Anticoag","1.3 High-Risk","1.4 WPV","1.5 Equity"];
+  let html = "";
+  labels.forEach((l, i) => {
+    const idx = i + 1;
+    const cls = state.phaseCompleted[idx] ? "complete" : (state.decisions.some(d=>d.scene===idx) ? "active" : "");
+    html += `<div class="ct-stage ${cls}"><div class="ct-dot">${state.phaseCompleted[idx]?'✓':'S'+(i+1)}</div><div class="ct-label">${l}</div></div>`;
+    if (i < labels.length - 1) html += `<div class="ct-line"></div>`;
+  });
+  wrap.innerHTML = html;
+  // overall progress
+  const done = Object.values(state.phaseCompleted).filter(Boolean).length;
+  document.getElementById("overallProgress").style.width = (done/5*100) + "%";
+}
+
+/* ============================================================
+   EMIT (Unity → SIMULUS xAPI envelope)
+   ============================================================ */
+function emit(scene, idx) {
+  const c = SCENES[scene].choices[idx];
+  const ts = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+  const env = {
+    actor: state.learnerName, verb: c.verb, object: c.object,
+    timestamp: ts, scene,
+    extensions: {
+      "https://aiwizn.io/ext/competency-refs": c.refs,
+      "https://aiwizn.io/ext/score": c.score,
+      phase: SCENES[scene].name
+    },
+    fb: c.fb
+  };
+  state.decisions.push(env);
+  state.consumed[scene].add(idx);
+
+  // COGNITA observe
+  cognita.observe(c.refs, c.score === 1);
+
+  // RESONANCE micro-feedback in scene
+  showFeedback(scene, c.fb, c.score);
+
+  // mark phase complete if any of the "right" actions done OR scene 4/5 (single-shot phases)
+  if (c.score === 1) state.phaseCompleted[scene] = true;
+  if (scene === 4 || scene === 5) state.phaseCompleted[scene] = true;
+
+  renderChoices(scene);
+  renderContinuum();
+  renderTrace();
+  renderDomains();
+  renderKpisLive();
+}
+
+function showFeedback(scene, fb, score) {
+  const el = document.getElementById(`fb-${scene}`);
+  const cls = fb.tier === "bad" ? "bad" : fb.tier === "warn" ? "warn" : "";
+  const compEl = `<div class="resonance-coach ${cls}"><div class="lbl">${fb.lbl}</div><b style="font-size:14px;color:var(--navy);">${fb.head}</b><div style="margin-top:4px;">${fb.body}</div></div>`;
+  el.insertAdjacentHTML("beforeend", compEl);
+}
+
+/* Render xAPI trace in LUMINA */
+function renderTrace() {
+  const el = document.getElementById("traceList");
+  if (state.decisions.length === 0) {
+    el.innerHTML = '<p class="muted">No envelopes yet — make a decision in Scene 1.1 to populate.</p>';
+    return;
+  }
+  el.innerHTML = state.decisions.map(d => {
+    const s = d.extensions["https://aiwizn.io/ext/score"];
+    const polCls = s === 1 ? "good" : s === 0.5 ? "warn" : "bad";
+    const polLbl = s === 1 ? "positive" : s === 0.5 ? "partial" : "negative";
+    return `<div class="xapi-line">
+      <span class="ts">${d.timestamp}</span>
+      <span class="stmt"><span class="verb">${d.verb}:${d.object}</span> <span class="muted">→ ${d.extensions["https://aiwizn.io/ext/competency-refs"].join(", ")}</span></span>
+      <span class="pol ${polCls}">${polLbl}</span>
+    </div>`;
+  }).join("");
+}
+
+/* Render Domain readiness panel */
+function renderDomains() {
+  const wrap = document.getElementById("domainList");
+  const snap = cognita.snap();
+  if (Object.keys(snap).length === 0) {
+    wrap.innerHTML = '<p class="muted">Awaiting evidence — fire an action in any scene.</p>';
+    return;
+  }
+  let html = "";
+  CONSTRUCTS.forEach(ref => {
+    const b = snap[ref]; if (!b) return;
+    const pct = b.p * 100;
+    const tier = pct >= 70 ? "" : pct >= 50 ? "amber" : "crimson";
+    html += `<div class="radar-row ${tier}">
+      <span class="r-label">${ref}</span>
+      <div class="r-bar"><i style="width:${pct}%"></i></div>
+      <span class="r-pct">${pct.toFixed(0)}%</span>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+/* Compute live KPIs */
+function renderKpisLive() {
+  const total = state.decisions.length;
+  const positives = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 1).length;
+  const negatives = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 0).length;
+  const expertPct = total ? Math.round(positives / total * 100) : 0;
+  // gap flags: red domains
+  const snap = cognita.snap();
+  const reds = Object.values(snap).filter(b => b.p < 0.5).length;
+  // composite NWI proxy
+  const vals = Object.values(snap).map(b => b.p);
+  const composite = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+  const nwi = (composite * 100).toFixed(0);
+
+  document.getElementById("kExpert").textContent = total === 0 ? "—" : (expertPct + "%");
+  document.getElementById("kExpertTrend").textContent = total === 0 ? "awaiting" : (`${positives}/${total} positive`);
+  document.getElementById("kExpertTrend").className = "trend";
+  document.getElementById("kGap").textContent = total === 0 ? "—" : reds;
+  document.getElementById("kGapTrend").textContent = total === 0 ? "awaiting" : (negatives ? `${negatives} miss` : `0 miss`);
+  document.getElementById("kNwi").textContent = total === 0 ? "—" : nwi;
+  document.getElementById("kNwiTrend").textContent = total === 0 ? "awaiting" : (composite >= 0.80 ? "▲ above cohort" : composite >= 0.65 ? "≈ at cohort" : "▼ below cohort");
+  document.getElementById("kNwiTrend").className = "trend " + (composite < 0.65 ? "down" : "");
+}
+
+/* Trend bars (cohort-level synthetic) */
+function renderTrend() {
+  const data = [62,65,68,64,70,73,71,75,69,74,78,72,79,82];
+  const wrap = document.getElementById("trendBars");
+  wrap.innerHTML = data.map(v => `<div class="b"><i style="height:${v}%;"></i></div>`).join("");
+}
+
+/* ============================================================
+   END SCENARIO → PERSONA
+   ============================================================ */
+function endScenario() {
+  if (state.decisions.length < 3) {
+    alert("Make decisions in at least Scenes 1.1 and 1.2 before ending.");
+    return;
+  }
+  const snap = cognita.snap();
+  const vals = Object.values(snap).map(b => b.p);
+  const composite = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+
+  // PERSONA name + body
+  document.getElementById("personaName").textContent = state.learnerName;
+  document.getElementById("personaMeta").textContent = "jc2026-readiness-shift-001 · " + new Date().toLocaleString() + " · " + state.decisions.length + " envelopes";
+
+  const verdict = composite >= 0.80 ? { c:"good", t:"survey-ready", nwiCls:"" }
+                 : composite >= 0.65 ? { c:"amber", t:"targeted gaps", nwiCls:"amber" }
+                 : { c:"crimson", t:"significant remediation", nwiCls:"crimson" };
+
+  // Build PERSONA terminal output
+  const positives = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 1).length;
+  const negatives = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 0).length;
+  const seededCatches = state.decisions.filter(d =>
+    d.extensions["https://aiwizn.io/ext/score"] === 1 &&
+    ["communicated:provider-call","verified:two-identifiers","reported:wpv-incident","assessed:columbia-screen","communicated:qualified-interpreter","communicated:social-work-referral"].includes(`${d.verb}:${d.object}`)
+  ).length;
+
+  // Domain top-5 lines
+  const sortedDomains = Object.entries(snap).sort((a,b)=>b[1].p-a[1].p);
+  const topLines = sortedDomains.slice(0,5).map(([ref,b]) => {
+    const cls = b.p >= 0.7 ? "good" : b.p >= 0.5 ? "amber" : "crimson";
+    return `<div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ ${ref}</span><span class="v ${cls}">p=${b.p.toFixed(2)} · n=${b.n}</span></div>`;
+  }).join("");
+
+  // Critical-miss flags (priority remediation)
+  const missed = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 0);
+  const missLines = missed.length === 0
+    ? `<div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ priority remediation</span><span class="v good">none</span></div>`
+    : missed.slice(0,3).map(m => `<div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ ${m.fb.lbl.replace('⚠ ','')}</span><span class="v crimson">${m.verb}:${m.object}</span></div>`).join("");
+
+  document.getElementById("personaBody").innerHTML = `
+    <div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ verdict</span><span class="v ${verdict.c==='good'?'good':verdict.c}">${verdict.t}</span></div>
+    <div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ composite mastery</span><span class="v ${verdict.c==='good'?'good':verdict.c}">${composite.toFixed(2)} (≥ 0.80 threshold)</span></div>
+    <div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ envelopes</span><span class="v">${state.decisions.length} captured · ${positives} positive · ${negatives} negative</span></div>
+    <div class="row" style="padding:4px 0;"><span class="k" style="min-width:240px;">▌ seeded-error catches</span><span class="v good">${seededCatches} of 6</span></div>
+    <div style="margin: 12px 0 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.06); color: var(--txt-4); letter-spacing:0.18em; font-size:9.5px; text-transform: uppercase;">▌ Domain posteriors · top 5</div>
+    ${topLines}
+    <div style="margin: 12px 0 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.06); color: var(--txt-4); letter-spacing:0.18em; font-size:9.5px; text-transform: uppercase;">▌ Priority remediation</div>
+    ${missLines}
+  `;
+
+  const nwiEl = document.getElementById("personaNwi");
+  nwiEl.textContent = `NWI ${(composite*100).toFixed(0)} · ${verdict.t.toUpperCase()}`;
+  nwiEl.className = "nwi " + verdict.nwiCls;
+
+  // Scroll to PERSONA
+  scrollTo_("persona");
+}
+
+function saveReflection() {
+  state.reflection = document.getElementById("reflectionInput").value;
+  alert("Reflection saved to PERSONA · " + state.reflection.length + " chars");
+}
+
+/* ============================================================
+   Reset / nav / export
+   ============================================================ */
+function resetScenario() {
+  state.decisions.length = 0;
+  for (const k in state.consumed) state.consumed[k].clear();
+  for (const k in state.phaseCompleted) state.phaseCompleted[k] = false;
+  for (const k in cognita.beliefs) delete cognita.beliefs[k];
+  // re-render scenes
+  for (let s=1; s<=5; s++) {
+    renderChoices(s); renderVitals(s);
+    document.getElementById(`fb-${s}`).innerHTML = "";
+  }
+  renderContinuum(); renderTrace(); renderDomains(); renderKpisLive();
+  scrollTo_("scenario");
+}
+
+function scrollTo_(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  // update active sidebar link
+  document.querySelectorAll(".side-link").forEach(s => s.classList.remove("active"));
+  // nothing fancy — just leave
+}
+
+function exportData(kind) {
+  const payload = {
+    scenario_id: "jc2026-readiness-shift-001",
+    learner: state.learnerName,
+    decisions: state.decisions,
+    posteriors: cognita.snap(),
+    reflection: state.reflection,
+    timestamp: new Date().toISOString()
+  };
+  if (kind === "json") {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    triggerDownload(blob, "aiwizn-jc2026-session.json");
+  } else {
+    const lines = ["timestamp,verb,object,score,refs"];
+    state.decisions.forEach(d => {
+      lines.push(`${d.timestamp},${d.verb},${d.object},${d.extensions["https://aiwizn.io/ext/score"]},"${d.extensions["https://aiwizn.io/ext/competency-refs"].join('|')}"`);
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    triggerDownload(blob, "aiwizn-jc2026-session.csv");
+  }
+}
+function triggerDownload(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ============================================================
+   Initial render
+   ============================================================ */
+const REFERENCES = [
+  "The Joint Commission. National Performance Goals — Hospital Program. Effective January 1, 2026. Joint Commission, Oakbrook Terrace, IL.",
+  "The Joint Commission. R3 Report Issue 38: National Patient Safety Goal to Improve Health Outcomes for All. 2023.",
+  "Posner K et al. The Columbia Suicide Severity Rating Scale: Initial validity and internal consistency findings from three multisite studies. Am J Psychiatry 2011.",
+  "Joint Commission Journal on Quality and Patient Safety. The Joint Commission's New and Revised Workplace Violence Prevention Standards for Hospitals. 2022.",
+  "Royal College of Physicians. National Early Warning Score (NEWS) 2. RCP, London, 2017."
+];
+
+window.addEventListener("DOMContentLoaded", () => {
+  for (let s = 1; s <= 5; s++) { renderVitals(s); renderChoices(s); }
+  renderContinuum();
+  renderTrace();
+  renderDomains();
+  renderKpisLive();
+  renderTrend();
+  document.getElementById("evList").innerHTML = REFERENCES.map(r=>`<li>${r}</li>`).join("");
+});
+
+/* ============================================================
+   Toast helper (used by Supabase module)
+   ============================================================ */
+function showToast(head, body, kind, uid) {
+  const wrap = document.getElementById("toastWrap");
+  const t = document.createElement("div");
+  t.className = "toast " + (kind || "");
+  t.innerHTML = `
+    <div class="toast-head">${head}</div>
+    <div class="toast-body">${body}</div>
+    ${uid ? `<div class="toast-uid">id · ${uid}</div>` : ""}
+  `;
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.animation = "toastOut .25s ease forwards"; }, 4500);
+  setTimeout(() => { t.remove(); }, 4900);
+}
+</script>
+
+<!-- ============================================================
+     SUPABASE WIRING — connects to scyfldezhztapttcyenr (live)
+     ============================================================ -->
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://scyfldezhztapttcyenr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XVqZASfCKdWY-lOwnJOgvw_KN2nunZ5";
+const SCENARIO_SLUG = "jc2026-readiness-shift-001";
+
+const dbDot  = document.getElementById("dbDot");
+const dbText = document.getElementById("dbText");
+const dbPill = document.getElementById("dbPill");
+
+let supa = null;
+try {
+  supa = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false },
+    realtime: { params: { eventsPerSecond: 5 } }
+  });
+  window.aiwiznSupa = supa;
+  console.log("[AIWIZN] Supabase client initialized · project scyfldezhztapttcyenr");
+} catch (e) {
+  console.error("[AIWIZN] Supabase init failed:", e);
+  dbPill.classList.add("error");
+  dbText.textContent = "DB · ERROR";
+}
+
+/* === 1. Probe the connection === */
+async function probe() {
+  if (!supa) return;
+  const { count, error } = await supa
+    .from("prototype_sessions")
+    .select("*", { count: "exact", head: true });
+  if (error) {
+    dbPill.classList.add("error");
+    dbText.textContent = "DB · " + error.code;
+    showToast("Supabase error", error.message, "error");
+  } else {
+    dbPill.classList.add("connected");
+    dbText.textContent = `DB · ${count} sessions`;
+    showToast("Connected · scyfldezhztapttcyenr", `prototype_sessions table · ${count} rows · anon read/write OK`, "");
+    return count;
+  }
+}
+
+/* === 2. Compute the prototype_sessions row from sim state === */
+function buildSessionRow() {
+  const state = window.state;
+  const cognita = window.cognita;
+  if (!state) return null;
+  const snap = cognita.snap();
+  const vals = Object.values(snap).map(b => b.p);
+  const composite = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  const nwi = Math.round(composite * 100);
+
+  // Per-decision counts (expert/mid/gap)
+  const expert = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 1).length;
+  const mid    = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 0.5).length;
+  const gap    = state.decisions.filter(d => d.extensions["https://aiwizn.io/ext/score"] === 0).length;
+
+  // Per-scene first-choice classification (for s1a..s1c style cols → repurposed for jc2026 phases)
+  const sceneType = (s) => {
+    const d = state.decisions.find(x => x.scene === s);
+    if (!d) return null;
+    const sc = d.extensions["https://aiwizn.io/ext/score"];
+    return sc === 1 ? "expert" : sc === 0.5 ? "mid" : "gap";
+  };
+
+  return {
+    session_uid: "jc2026-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+    nurse_name: state.learnerName || "Anonymous",
+    unit: "Med-Surg · Floor 4 East",
+    scenario_slug: SCENARIO_SLUG,
+    session_started: new Date(state.simStartMs || Date.now()).toISOString(),
+    nwi_pct: nwi,
+    total_nodes: state.decisions.length,
+    expert_count: expert,
+    mid_count: mid,
+    gap_count: gap,
+    self_corrections: 0,
+    confirmed_gaps: gap,
+    aria_engagements: 0,
+    avg_decision_s: 12,
+    avg_inter_s: 18,
+    s1a: sceneType(1), s1b_1: sceneType(2), s1c: sceneType(3),
+    s2a: sceneType(4), s2b: sceneType(5),
+    reflection: state.reflection || "",
+    raw_payload: {
+      scenario: SCENARIO_SLUG,
+      decisions: state.decisions,
+      posteriors: snap,
+      composite_mastery: composite,
+      seeded_catches: state.decisions.filter(d =>
+        d.extensions["https://aiwizn.io/ext/score"] === 1 &&
+        ["communicated:provider-call","verified:two-identifiers","reported:wpv-incident",
+         "assessed:columbia-screen","communicated:qualified-interpreter",
+         "communicated:social-work-referral"].includes(`${d.verb}:${d.object}`)
+      ).length,
+      npg_focus: ["NPG-1","NPG-2","NPG-2a","NPG-14","high-risk.suicide","health-equity.hrsn"],
+      validity: "formative-only · CFA gate active"
+    }
+  };
+}
+
+/* === 3. Persist session row → public.prototype_sessions === */
+async function persistSession() {
+  if (!supa) { showToast("Offline", "Supabase client unavailable; export JSON instead.", "warn"); return; }
+  const row = buildSessionRow();
+  if (!row) return;
+  showToast("POST → prototype_sessions", "Inserting session row · " + row.session_uid, "");
+  const { data, error } = await supa
+    .from("prototype_sessions")
+    .insert([row])
+    .select()
+    .single();
+  if (error) {
+    showToast("Insert failed", error.message, "error");
+    console.error("[AIWIZN] persistSession error:", error);
+    return null;
+  }
+  showToast("HTTP 201 · row landed", `NWI ${row.nwi_pct}% · ${row.expert_count} expert · ${row.gap_count} gap`, "", data.id);
+  // Bump connection counter
+  if (dbText.textContent.startsWith("DB · ") && /\d+/.test(dbText.textContent)) {
+    const n = parseInt(dbText.textContent.match(/\d+/)[0], 10) + 1;
+    dbText.textContent = "DB · " + n + " sessions";
+  }
+  return data;
+}
+
+/* === 4. Patch reflection back to row === */
+async function persistReflection(rowId, body) {
+  if (!supa || !rowId) return;
+  const { error } = await supa.from("prototype_sessions").update({ reflection: body }).eq("id", rowId);
+  if (error) { showToast("Patch failed", error.message, "error"); return; }
+  showToast("PATCH ✓ reflection", `${body.length} chars saved`, "");
+}
+
+/* === 5. Pull recent sessions for LUMINA cohort panel === */
+async function fetchRecent() {
+  if (!supa) return;
+  const { data, error } = await supa
+    .from("prototype_sessions")
+    .select("nurse_name, unit, scenario_slug, recorded_at, nwi_pct, expert_count, mid_count, gap_count")
+    .order("recorded_at", { ascending: false })
+    .limit(8);
+  if (error) { console.error("[AIWIZN] fetchRecent:", error); return; }
+  renderSessions(data);
+}
+
+function renderSessions(rows) {
+  const list = document.getElementById("sessionList");
+  if (!rows || rows.length === 0) {
+    list.innerHTML = '<p class="muted">No sessions yet. Complete the scenario to write the first row.</p>';
+    return;
+  }
+  list.innerHTML = rows.map(r => {
+    const initials = (r.nurse_name || "??").split(/\s+/).map(p => p[0]).slice(0,2).join("").toUpperCase();
+    const tier = r.nwi_pct >= 80 ? "" : r.nwi_pct >= 65 ? "amber" : "crimson";
+    const ago = timeAgo(new Date(r.recorded_at));
+    return `<div class="session-row">
+      <div class="av ${tier}">${initials}</div>
+      <div>
+        <div class="name">${r.nurse_name || "Anonymous"}</div>
+        <div class="meta">${r.scenario_slug} · ${ago}</div>
+      </div>
+      <div></div>
+      <span class="cci ${tier}">NWI ${r.nwi_pct ?? "—"}</span>
+    </div>`;
+  }).join("");
+}
+
+function prependSession(r) {
+  const list = document.getElementById("sessionList");
+  const initials = (r.nurse_name || "??").split(/\s+/).map(p => p[0]).slice(0,2).join("").toUpperCase();
+  const tier = r.nwi_pct >= 80 ? "" : r.nwi_pct >= 65 ? "amber" : "crimson";
+  const div = document.createElement("div");
+  div.className = "session-row new-row";
+  div.innerHTML = `
+    <div class="av ${tier}">${initials}</div>
+    <div>
+      <div class="name">${r.nurse_name || "Anonymous"}</div>
+      <div class="meta">${r.scenario_slug} · just now</div>
+    </div>
+    <div></div>
+    <span class="cci ${tier}">NWI ${r.nwi_pct ?? "—"}</span>
+  `;
+  list.insertBefore(div, list.firstChild);
+  // keep at most 8
+  while (list.children.length > 8) list.removeChild(list.lastChild);
+}
+
+function timeAgo(d) {
+  const s = Math.floor((Date.now() - d.getTime())/1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s/60) + " min ago";
+  if (s < 86400) return Math.floor(s/3600) + " hr ago";
+  return Math.floor(s/86400) + " d ago";
+}
+
+/* === 6. Realtime subscription on prototype_sessions === */
+function subscribeRealtime() {
+  if (!supa) return;
+  const ch = supa.channel("prototype_sessions:inserts")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "prototype_sessions" }, (payload) => {
+      console.log("[AIWIZN] realtime INSERT:", payload.new);
+      prependSession(payload.new);
+      if (payload.new.session_uid && !payload.new.session_uid.startsWith("jc2026-")) {
+        // Don't toast our own writes (we already toasted)
+        showToast("Realtime · new session", `${payload.new.nurse_name} · NWI ${payload.new.nwi_pct}%`, "", payload.new.id);
+      }
+      // bump count
+      if (dbText.textContent.startsWith("DB · ") && /\d+/.test(dbText.textContent)) {
+        const n = parseInt(dbText.textContent.match(/\d+/)[0], 10) + 1;
+        dbText.textContent = "DB · " + n + " sessions";
+      }
+    })
+    .subscribe();
+  return ch;
+}
+
+/* === 7. Bind to existing UI ===
+   Wrap endScenario / saveReflection / exportData to also write to Supabase.
+   The original functions remain — we just chain a Supabase call after them.
+*/
+let lastInsertedRowId = null;
+
+const originalEnd = window.endScenario;
+window.endScenario = async function() {
+  originalEnd();
+  if (window.state && window.state.decisions && window.state.decisions.length >= 3) {
+    const inserted = await persistSession();
+    if (inserted) lastInsertedRowId = inserted.id;
+  }
+};
+
+const originalSaveRef = window.saveReflection;
+window.saveReflection = async function() {
+  // copy over the in-memory state from the original
+  window.state.reflection = document.getElementById("reflectionInput").value;
+  if (lastInsertedRowId) {
+    await persistReflection(lastInsertedRowId, window.state.reflection);
+  } else {
+    showToast("Reflection cached", "Will save when you end the scenario.", "warn");
+  }
+};
+
+/* Re-render trend bars from real cohort data once we have it */
+async function renderTrendFromDb() {
+  if (!supa) return;
+  // Pull the last 14 days of rows, bucket by day, take avg NWI per day
+  const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
+  const { data, error } = await supa
+    .from("prototype_sessions")
+    .select("recorded_at, nwi_pct")
+    .gte("recorded_at", since)
+    .order("recorded_at", { ascending: true });
+  if (error || !data || data.length === 0) return; // keep synthetic fallback
+  const buckets = {};
+  data.forEach(r => {
+    const day = (r.recorded_at || "").slice(0,10);
+    if (!buckets[day]) buckets[day] = [];
+    if (r.nwi_pct != null) buckets[day].push(r.nwi_pct);
+  });
+  const days = Object.keys(buckets).sort();
+  const series = days.map(d => Math.round(buckets[d].reduce((a,b)=>a+b,0) / buckets[d].length));
+  if (series.length < 3) return;
+  const wrap = document.getElementById("trendBars");
+  wrap.innerHTML = series.map(v => `<div class="b" title="${v}%"><i style="height:${v}%;"></i></div>`).join("");
+}
+
+/* === 8. Boot === */
+window.addEventListener("DOMContentLoaded", async () => {
+  await probe();
+  await fetchRecent();
+  await renderTrendFromDb();
+  subscribeRealtime();
+});
+
+// Make functions globally callable (for window.aiwiznSupa exploration)
+window.aiwiznSupabase = { probe, persistSession, fetchRecent, subscribeRealtime, persistReflection };
+</script>
+</body>
+</html>
