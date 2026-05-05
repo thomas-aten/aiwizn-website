@@ -43,7 +43,9 @@ export async function POST(request: Request) {
   const tier: PriceTier = body.tier ?? ACTIVE_TIER;
 
   const isInstitutional = plan === "institutional";
-  const requestedQty = Number.isFinite(body.quantity) ? Math.floor(body.quantity!) : 1;
+  const rawQty = body.quantity;
+  const requestedQty =
+    typeof rawQty === "number" && Number.isFinite(rawQty) ? Math.floor(rawQty) : 1;
   const quantity = isInstitutional ? Math.max(1, requestedQty) : 1;
 
   if (isInstitutional && quantity > SELF_SERVE_SEAT_CAP) {
@@ -108,15 +110,14 @@ export async function POST(request: Request) {
 
 // Allow GET for convenient debugging (returns config snapshot, no secrets).
 export async function GET() {
-  const plans = Object.fromEntries(
-    Object.entries(PLANS).map(([id, p]) => [
-      id,
-      {
-        name: p.name,
-        active: p.prices[ACTIVE_TIER],
-        regular: p.prices.regular,
-      },
-    ]),
-  );
+  const plans: Record<string, unknown> = {};
+  for (const id of Object.keys(PLANS) as Plan[]) {
+    const p = PLANS[id];
+    plans[id] = {
+      name: p.name,
+      active: p.prices[ACTIVE_TIER],
+      regular: p.prices.regular,
+    };
+  }
   return NextResponse.json({ active_tier: ACTIVE_TIER, plans });
 }
