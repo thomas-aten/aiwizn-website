@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import {
   ACTIVE_TIER,
-  PLANS,
   SELF_SERVE_SEAT_CAP,
   type Plan,
   type PriceTier,
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let priceId: string;
+  let priceId = "";
   try {
     priceId = getPriceId(plan, tier);
   } catch (err) {
@@ -108,16 +107,3 @@ export async function POST(request: Request) {
   }
 }
 
-// Allow GET for convenient debugging (returns config snapshot, no secrets).
-export async function GET() {
-  const plans: Record<string, unknown> = {};
-  for (const id of Object.keys(PLANS) as Plan[]) {
-    const p = PLANS[id];
-    plans[id] = {
-      name: p.name,
-      active: p.prices[ACTIVE_TIER],
-      regular: p.prices.regular,
-    };
-  }
-  return NextResponse.json({ active_tier: ACTIVE_TIER, plans });
-}
