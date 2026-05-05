@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, STAGES } from "@/lib/agents";
 import { hasActiveEnginesSubscription } from "@/lib/entitlement";
-import { ACTIVE_PRICE } from "@/lib/pricing";
+import { ACTIVE_TIER, PLANS } from "@/lib/pricing";
 
 export const metadata = {
   title: "Workspace",
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
                 ● No active subscription
               </p>
               <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
-                Unlock both engines for {ACTIVE_PRICE.display} / yr.
+                Unlock both engines for {PLANS.individual.prices[ACTIVE_TIER].display} / yr.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-ink-2">
                 Annual subscription · Clinical Engine + JC 2026 Engine ·
