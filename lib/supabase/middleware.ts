@@ -3,7 +3,25 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookieSpec = { name: string; value: string; options?: CookieOptions };
 
+/**
+ * Middleware-side Supabase session refresh.
+ *
+ * BULLETPROOF CONTRACT: this function must never throw. If anything goes wrong
+ * (missing env vars, malformed cookies, Supabase unreachable, library throws),
+ * we fall through to a plain NextResponse.next() so the page can still render.
+ * A 500'd middleware kills every route on the site, which is far worse than
+ * occasionally treating a logged-in user as anonymous for one request.
+ */
 export async function updateSession(request: NextRequest) {
+  try {
+    return await updateSessionInner(request);
+  } catch (err) {
+    console.error("[middleware] fatal — falling through to anonymous:", err);
+    return NextResponse.next({ request });
+  }
+}
+
+async function updateSessionInner(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   // If env vars are missing, skip auth refresh and let middleware short-circuit.
@@ -35,10 +53,17 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Refresh tokens.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refresh tokens. Defensive: never let an auth-refresh error bubble up as a 500.
+  // Stale cookies, network blips, or an unreachable Supabase project should not
+  // take down the page — we just treat the visitor as anonymous.
+  let user: { id: string } | null = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user ?? null;
+  } catch (err) {
+    console.error("[middleware] supabase.auth.getUser failed:", err);
+    user = null;
+  }
 
   // Protect (app) routes.
   const url = request.nextUrl;
