@@ -32,7 +32,8 @@ export function AgentsGrid() {
 }
 
 function AgentCard({ agent }: { agent: Agent }) {
-  const stage = STAGES.find((s) => s.id === agent.stage)!;
+  const stage = STAGES.find((s) => s.id === agent.stage);
+  if (!stage) return null;
   return (
     <article className="card p-6">
       <div className="flex items-center justify-between">
