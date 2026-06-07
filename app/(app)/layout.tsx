@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Wordmark } from "@/components/wordmark";
 import { createClient } from "@/lib/supabase/server";
+import { getCustomerContext } from "@/lib/customerContext";
 
 const NAV = [
   { href: "/dashboard", label: "Overview" },
@@ -21,6 +22,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/login");
 
+  // Admin nav entry is visible only to customer admins. getCustomerContext is
+  // defensive: a missing customer_users table just yields a non-admin context.
+  const ctx = await getCustomerContext();
+  const nav =
+    ctx.status === "ok" && ctx.role === "admin"
+      ? [...NAV, { href: "/dashboard/admin/config", label: "Admin" }]
+      : NAV;
+
   const fullName =
     (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";
 
@@ -30,7 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="container flex h-16 items-center justify-between gap-6">
           <Wordmark showTagline={false} />
           <nav className="hidden items-center gap-6 md:flex" aria-label="Workspace">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
