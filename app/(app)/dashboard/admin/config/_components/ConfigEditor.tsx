@@ -615,9 +615,18 @@ function ResultNotice({ result }: { result: PublishResult }) {
     return (
       <Banner tone="warn">
         Clinical-override change <strong>staged for medical-reviewer
-        approval</strong> (would become v{result.version}). No version was
-        published — non-clinical edits, if any, were not written; re-publish them
-        separately.
+        approval</strong>.{" "}
+        {result.published_version
+          ? `Your other (non-clinical) edits published as v${result.published_version}.`
+          : "No non-clinical changes were pending, so no new version was published."}{" "}
+        Track it under{" "}
+        <a
+          href="/dashboard/admin/reviews"
+          className="font-medium text-orange underline underline-offset-2"
+        >
+          Pending reviews
+        </a>
+        .
       </Banner>
     );
   }

@@ -4,8 +4,11 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Wordmark } from "@/components/wordmark";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerContext } from "@/lib/customerContext";
+import { countPendingProposals } from "@/lib/clinicalOverrideProposals";
 
-const NAV = [
+type NavItem = { href: string; label: string; badge?: number };
+
+const NAV: NavItem[] = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/engines", label: "Engines" },
   { href: "/dashboard/scenarios", label: "Scenarios" },
@@ -25,10 +28,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Admin nav entry is visible only to customer admins. getCustomerContext is
   // defensive: a missing customer_users table just yields a non-admin context.
   const ctx = await getCustomerContext();
-  const nav =
-    ctx.status === "ok" && ctx.role === "admin"
-      ? [...NAV, { href: "/dashboard/admin/config", label: "Admin" }]
-      : NAV;
+  let nav: NavItem[] = NAV;
+  if (ctx.status === "ok" && ctx.role === "admin") {
+    const pending = await countPendingProposals(ctx.customerId);
+    nav = [
+      ...NAV,
+      { href: "/dashboard/admin/config", label: "Admin" },
+      { href: "/dashboard/admin/reviews", label: "Reviews", badge: pending },
+    ];
+  }
 
   const fullName =
     (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";
@@ -43,9 +51,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Link
                 key={n.href}
                 href={n.href}
-                className="font-mono text-[11px] uppercase tracking-label text-ink-2 hover:text-ink"
+                className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-label text-ink-2 hover:text-ink"
               >
                 {n.label}
+                {typeof n.badge === "number" && n.badge > 0 && (
+                  <span
+                    className="inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-orange px-1 py-0.5 text-[9px] font-semibold leading-none text-white"
+                    aria-label={`${n.badge} pending`}
+                  >
+                    {n.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

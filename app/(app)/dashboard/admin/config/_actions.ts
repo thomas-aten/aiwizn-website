@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCustomerContext } from "@/lib/customerContext";
+import { getCustomerContext, type CustomerContext } from "@/lib/customerContext";
+import { writeAuditEvent } from "@/lib/auditLog";
 import {
   clinicalOverridesChanged,
   migrateToV11,
@@ -17,15 +18,21 @@ import {
  * {@link getCustomerContext} — the client `canEdit` flag is UX only and is
  * never trusted here. A non-admin (or unassigned/anonymous) caller is rejected
  * regardless of what the form submits.
+ *
+ * Every successful state change writes an append-only `audit_log` row via
+ * {@link writeAuditEvent} (Sprint 5.5).
  */
 
 export type PublishResult =
   | { status: "published"; version: number }
   | {
-      // clinical_overrides changed → staged for medical-reviewer approval
-      // instead of auto-publishing. No row is written this sprint.
+      // clinical_overrides changed → staged for medical-reviewer approval.
+      // Non-clinical sections (if any changed) still publish as version+1.
       status: "staged_for_review";
-      version: number; // the version this WOULD become once approved
+      proposal_id: string;
+      /** version published for the non-clinical sections, or null if none changed */
+      published_version: number | null;
+      message: string;
     }
   | { status: "error"; errors: string[] };
 
@@ -69,10 +76,48 @@ async function currentVersion(
   return typeof v === "number" && Number.isFinite(v) ? v : 0;
 }
 
+/** Top-level config sections that differ between two configs (for audit payloads). */
+function changedSections(
+  a: ProtocolConfigV11,
+  b: ProtocolConfigV11,
+): string[] {
+  const keys = Object.keys(b) as (keyof ProtocolConfigV11)[];
+  return keys.filter(
+    (k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]),
+  );
+}
+
+/** Insert a new versioned protocol_configs row; returns its id or an error. */
+async function insertConfigVersion(
+  supabase: ReturnType<typeof createClient>,
+  ctx: Extract<CustomerContext, { status: "ok" }>,
+  config: ProtocolConfigV11,
+  version: number,
+): Promise<{ id: string } | { error: string }> {
+  const { data, error } = await supabase
+    .from("protocol_configs")
+    .insert({
+      customer_id: ctx.customerId,
+      engine_slug: CANONICAL_SLUG,
+      config_json: config,
+      version,
+      effective_from: new Date().toISOString(),
+      created_by: ctx.userId,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return { error: error?.message ?? "insert returned no row" };
+  }
+  return { id: data.id as string };
+}
+
 /**
  * Validate the proposed config and publish a new versioned row — UNLESS the
  * clinical_overrides section changed, in which case the change is staged for
- * medical-reviewer approval and no row is written (governance gate).
+ * medical-reviewer approval (see {@link stageClinicalOverride}) and only the
+ * non-clinical sections publish normally.
  */
 export async function publishConfig(
   proposed: unknown,
@@ -99,7 +144,7 @@ export async function publishConfig(
   const prevVersion = await currentVersion(supabase, ctx.customerId);
   const nextVersion = prevVersion + 1;
 
-  // Governance gate: clinical_overrides edits route to the review queue.
+  // Resolve the currently-published config to diff against.
   const { data: existingRow } = await supabase
     .from("protocol_configs")
     .select("config_json")
@@ -115,33 +160,143 @@ export async function publishConfig(
     next.branding.customer_name,
   );
 
+  // Governance gate: clinical_overrides edits route to the review queue.
   if (clinicalOverridesChanged(current, next)) {
-    // Out of scope this sprint: insert into a clinical_override_reviews queue.
-    // For now we DO NOT write the protocol_configs row — we report that the
-    // change is staged so a medical reviewer can approve it.
-    return { status: "staged_for_review", version: nextVersion };
+    return stageClinicalOverride(supabase, ctx, current, next, nextVersion);
   }
 
-  const { error } = await supabase.from("protocol_configs").insert({
-    customer_id: ctx.customerId,
-    engine_slug: CANONICAL_SLUG,
-    config_json: next,
-    version: nextVersion,
-    effective_from: new Date().toISOString(),
-    created_by: ctx.userId,
+  const inserted = await insertConfigVersion(supabase, ctx, next, nextVersion);
+  if ("error" in inserted) {
+    console.error("[config/_actions] publish insert failed:", inserted.error);
+    return { status: "error", errors: [`Could not publish: ${inserted.error}`] };
+  }
+
+  await writeAuditEvent({
+    customerId: ctx.customerId,
+    userId: ctx.userId,
+    eventType: "protocol_config.published",
+    resourceType: "protocol_configs",
+    resourceId: inserted.id,
+    payload: {
+      version: nextVersion,
+      engine_slug: CANONICAL_SLUG,
+      changed_sections: changedSections(current, next),
+    },
   });
-
-  if (error) {
-    console.error("[config/_actions] publish insert failed:", error.message);
-    return {
-      status: "error",
-      errors: [`Could not publish: ${error.message}`],
-    };
-  }
 
   // Engine loader reads the most-recent row — refresh cached routes.
   revalidatePath("/dashboard/admin/config");
   revalidatePath("/dashboard/engines", "layout");
 
   return { status: "published", version: nextVersion };
+}
+
+/**
+ * Stage a clinical_overrides edit for medical-reviewer approval.
+ *
+ * - Publishes the NON-clinical sections (if any changed) as a new
+ *   protocol_configs version, holding clinical_overrides at the current value.
+ * - Inserts a `clinical_override_proposals` row with the proposed override JSON.
+ * - Writes audit events for both the publish (if any) and the proposal.
+ */
+async function stageClinicalOverride(
+  supabase: ReturnType<typeof createClient>,
+  ctx: Extract<CustomerContext, { status: "ok" }>,
+  current: ProtocolConfigV11,
+  next: ProtocolConfigV11,
+  nextVersion: number,
+): Promise<PublishResult> {
+  // Non-clinical sections published with clinical_overrides held at current.
+  const nonClinical: ProtocolConfigV11 = {
+    ...next,
+    clinical_overrides: current.clinical_overrides,
+  };
+  const nonClinicalChanged =
+    JSON.stringify(nonClinical) !== JSON.stringify(current);
+
+  let publishedVersion: number | null = null;
+  if (nonClinicalChanged) {
+    const inserted = await insertConfigVersion(
+      supabase,
+      ctx,
+      nonClinical,
+      nextVersion,
+    );
+    if ("error" in inserted) {
+      console.error(
+        "[config/_actions] non-clinical publish failed:",
+        inserted.error,
+      );
+      return {
+        status: "error",
+        errors: [`Could not publish non-clinical changes: ${inserted.error}`],
+      };
+    }
+    publishedVersion = nextVersion;
+    await writeAuditEvent({
+      customerId: ctx.customerId,
+      userId: ctx.userId,
+      eventType: "protocol_config.published",
+      resourceType: "protocol_configs",
+      resourceId: inserted.id,
+      payload: {
+        version: nextVersion,
+        engine_slug: CANONICAL_SLUG,
+        changed_sections: changedSections(current, nonClinical),
+        note: "non-clinical sections; clinical_overrides staged separately",
+      },
+    });
+  }
+
+  // Stage the clinical override for review.
+  const { data: proposal, error: propErr } = await supabase
+    .from("clinical_override_proposals")
+    .insert({
+      customer_id: ctx.customerId,
+      engine_slug: CANONICAL_SLUG,
+      proposed_clinical_overrides: next.clinical_overrides,
+      proposed_by: ctx.userId,
+    })
+    .select("id")
+    .single();
+
+  if (propErr || !proposal) {
+    console.error(
+      "[config/_actions] proposal insert failed:",
+      propErr?.message,
+    );
+    return {
+      status: "error",
+      errors: [
+        `Could not stage clinical override: ${propErr?.message ?? "no row returned"}`,
+      ],
+    };
+  }
+  const proposalId = proposal.id as string;
+
+  await writeAuditEvent({
+    customerId: ctx.customerId,
+    userId: ctx.userId,
+    eventType: "protocol_config.override_proposed",
+    resourceType: "clinical_override_proposals",
+    resourceId: proposalId,
+    payload: {
+      engine_slug: CANONICAL_SLUG,
+      before: current.clinical_overrides,
+      after: next.clinical_overrides,
+      published_version: publishedVersion,
+    },
+  });
+
+  revalidatePath("/dashboard/admin/config");
+  revalidatePath("/dashboard/admin/reviews");
+  if (nonClinicalChanged) revalidatePath("/dashboard/engines", "layout");
+
+  return {
+    status: "staged_for_review",
+    proposal_id: proposalId,
+    published_version: publishedVersion,
+    message:
+      "Clinical override staged for medical-reviewer approval. Other config changes published normally.",
+  };
 }
