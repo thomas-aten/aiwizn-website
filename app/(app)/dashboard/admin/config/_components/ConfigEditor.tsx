@@ -139,8 +139,8 @@ export function ConfigEditor({
           />
           <TextField
             label="Hospital display name"
-            value={config.branding.hospital_display_name}
-            onChange={(v) => setBranding({ hospital_display_name: v })}
+            value={config.branding.hospital_name_display}
+            onChange={(v) => setBranding({ hospital_name_display: v })}
             disabled={ro}
           />
           <TextField

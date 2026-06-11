@@ -6,6 +6,14 @@ The clinical engine and Care Support engine track their own versions in `aiwizn-
 
 ---
 
+## [0.3.0] — 2026-06-11 (Sprint 6.2)
+
+- **Config editor / engine dialect alignment.** The dashboard config editor was writing short-form timing/terminology/branding keys (`door_to_balloon_min`, `term_code_blue`, `hospital_display_name`) while the clinical engine and V1.1 spec read long-form keys (`stemi_door_to_balloon_min`, `code_blue`, `hospital_name_display`). The mismatch caused seed values to be silently lost — `migrateToV11` couldn't find the engine's keys and fell back to base defaults, then the editor wrote its short-form dialect back on publish. Editor is now the source of truth for V1.1 long-form keys throughout.
+- `lib/protocolConfig`: `TimingsConfig`, `TerminologyConfig`, `BrandingConfig.hospital_name_display` switched to long-form V1.1 keys. `sepsis_bundle_min` (minutes) → `sepsis_bundle_hr` (hours, matches SEP-1). Terminology now exposes `code_blue`, `septic_shock`, `interpreter_service`, `rapid_response_team`; the engine-less `term_attending` and `term_charge_nurse` fields are dropped.
+- `migrateToV11` reads long-form first and falls back to legacy short-form so existing (pre-Sprint 6.2) rows still load correctly. Legacy `sepsis_bundle_min` is divided by 60 on read.
+- `_components/ConfigEditor.tsx` + `_components/diff.ts` updated to bind to the new keys; field labels unchanged.
+- Out of scope (deferred): standing-orders keys still diverge between the editor (`nurse_initiate_ecg`, `nurse_initiate_troponin`, `pharmacist_dose_heparin`, …) and the engine (`nurse_initiate_aspirin`, `nurse_cath_lab_activation`, …) — entirely different orders, not a renaming. Worth a follow-up sprint that decides the canonical V1.1 standing-orders set and routes accordingly.
+
 ## [unreleased] — Sprint 6.1 (in progress)
 
 - Multi-customer admin handling. Platform owners (e.g. AIWIZN staff who are admin of multiple tenants) now resolve cleanly through `getCustomerContext`. Single-customer admins (hospital staff) see no UX change.

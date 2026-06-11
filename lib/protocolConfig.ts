@@ -31,16 +31,25 @@ export interface BrandingConfig {
   logo_url: string;
   /** Hex accent color, e.g. "#00A87A". */
   accent_color: string;
-  hospital_display_name: string;
+  /**
+   * V1.1 spec key (matches the clinical engine). Older rows may still carry the
+   * legacy short-form `hospital_display_name` — see {@link migrateToV11}.
+   */
+  hospital_name_display: string;
   attending_naming: AttendingNaming;
 }
 
+/**
+ * Timing targets — V1.1 long-form keys, matching the clinical engine and the
+ * `multitenancy/README.md` spec. Note: `sepsis_bundle_hr` is in HOURS (1 or 3),
+ * not minutes, to align with SEP-1 / Surviving Sepsis bundle conventions.
+ */
 export interface TimingsConfig {
   door_to_ecg_min: number;
-  door_to_balloon_min: number;
-  door_to_needle_min: number;
-  door_to_ct_min: number;
-  sepsis_bundle_min: number;
+  stemi_door_to_balloon_min: number;
+  stroke_door_to_needle_min: number;
+  stroke_door_to_ct_min: number;
+  sepsis_bundle_hr: number;
   stroke_door_to_device_min: number;
 }
 
@@ -54,11 +63,17 @@ export interface StandingOrdersConfig {
   pharmacist_renal_adjust: boolean;
 }
 
+/**
+ * Terminology overrides — V1.1 keys (no `term_` prefix), matching the engine.
+ * The legacy `term_attending` / `term_charge_nurse` fields were dropped: the
+ * attending naming is now driven by {@link BrandingConfig.attending_naming} and
+ * the charge-nurse term wasn't read by the engine.
+ */
 export interface TerminologyConfig {
-  term_attending: string;
-  term_charge_nurse: string;
-  term_rapid_response: string;
-  term_code_blue: string;
+  code_blue: string;
+  septic_shock: string;
+  interpreter_service: string;
+  rapid_response_team: string;
 }
 
 export type ScenarioVariant = "standard" | "expanded" | "condensed";
@@ -141,7 +156,7 @@ export const TIMING_FIELDS: TimingField[] = [
     anchor: "ACC/AHA gold standard: ≤10 min from arrival",
   },
   {
-    key: "door_to_balloon_min",
+    key: "stemi_door_to_balloon_min",
     label: "Door-to-balloon (PCI)",
     unit: "min",
     min: 30,
@@ -149,7 +164,7 @@ export const TIMING_FIELDS: TimingField[] = [
     anchor: "AHA gold standard: ≤90 min",
   },
   {
-    key: "door_to_needle_min",
+    key: "stroke_door_to_needle_min",
     label: "Door-to-needle (tPA, stroke)",
     unit: "min",
     min: 15,
@@ -157,7 +172,7 @@ export const TIMING_FIELDS: TimingField[] = [
     anchor: "AHA/ASA gold standard: ≤60 min (target ≤45)",
   },
   {
-    key: "door_to_ct_min",
+    key: "stroke_door_to_ct_min",
     label: "Door-to-CT (stroke imaging)",
     unit: "min",
     min: 5,
@@ -165,12 +180,12 @@ export const TIMING_FIELDS: TimingField[] = [
     anchor: "AHA/ASA gold standard: ≤25 min to scan",
   },
   {
-    key: "sepsis_bundle_min",
+    key: "sepsis_bundle_hr",
     label: "Sepsis bundle completion",
-    unit: "min",
-    min: 30,
-    max: 360,
-    anchor: "SEP-1 / Surviving Sepsis: 3-hour (180 min) bundle",
+    unit: "hr",
+    min: 1,
+    max: 6,
+    anchor: "SEP-1 / Surviving Sepsis: 3-hour bundle (1 hr for severe sepsis/septic shock)",
   },
   {
     key: "stroke_door_to_device_min",
@@ -242,10 +257,18 @@ export type TerminologyField = {
 };
 
 export const TERMINOLOGY_FIELDS: TerminologyField[] = [
-  { key: "term_attending", label: "Attending physician", default: "Attending" },
-  { key: "term_charge_nurse", label: "Charge nurse", default: "Charge Nurse" },
-  { key: "term_rapid_response", label: "Rapid response", default: "Rapid Response" },
-  { key: "term_code_blue", label: "Cardiac arrest call", default: "Code Blue" },
+  { key: "code_blue", label: "Cardiac arrest call", default: "Code Blue" },
+  { key: "septic_shock", label: "Septic shock", default: "Septic Shock" },
+  {
+    key: "interpreter_service",
+    label: "Interpreter service",
+    default: "Interpreter Services",
+  },
+  {
+    key: "rapid_response_team",
+    label: "Rapid response team",
+    default: "Rapid Response",
+  },
 ];
 
 export const SCENARIO_VARIANT_OPTIONS: { value: ScenarioVariant; label: string }[] =
@@ -313,15 +336,15 @@ export function defaultProtocolConfig(
       slug,
       logo_url: "",
       accent_color: "#00A87A",
-      hospital_display_name: customerName,
+      hospital_name_display: customerName,
       attending_naming: "attending",
     },
     timings: {
       door_to_ecg_min: 10,
-      door_to_balloon_min: 90,
-      door_to_needle_min: 60,
-      door_to_ct_min: 25,
-      sepsis_bundle_min: 180,
+      stemi_door_to_balloon_min: 90,
+      stroke_door_to_needle_min: 60,
+      stroke_door_to_ct_min: 25,
+      sepsis_bundle_hr: 3,
       stroke_door_to_device_min: 90,
     },
     standing_orders: {
@@ -334,10 +357,10 @@ export function defaultProtocolConfig(
       pharmacist_renal_adjust: true,
     },
     terminology: {
-      term_attending: "Attending",
-      term_charge_nurse: "Charge Nurse",
-      term_rapid_response: "Rapid Response",
-      term_code_blue: "Code Blue",
+      code_blue: "Code Blue",
+      septic_shock: "Septic Shock",
+      interpreter_service: "Interpreter Services",
+      rapid_response_team: "Rapid Response",
     },
     scenario_overrides: {
       clinical: defaultEngineScenario(),
@@ -414,6 +437,13 @@ export function migrateToV11(
     };
   };
 
+  // Sepsis legacy fallback: editor used to write `sepsis_bundle_min` in minutes
+  // (60 or 180). Convert to hours when only the legacy key is present.
+  const sepsisLegacyMin = num(t.sepsis_bundle_min, NaN);
+  const sepsisLegacyHr = Number.isFinite(sepsisLegacyMin)
+    ? Math.round(sepsisLegacyMin / 60)
+    : NaN;
+
   return {
     schema_version: SCHEMA_VERSION,
     branding: {
@@ -422,9 +452,13 @@ export function migrateToV11(
       slug: slug || str(b.slug, base.branding.slug),
       logo_url: str(b.logo_url, base.branding.logo_url),
       accent_color: str(b.accent_color, base.branding.accent_color),
-      hospital_display_name: str(
-        b.hospital_display_name,
-        customerName || base.branding.hospital_display_name,
+      // V1.1 long-form first; fall back to legacy short-form so older rows still load.
+      hospital_name_display: str(
+        b.hospital_name_display,
+        str(
+          b.hospital_display_name,
+          customerName || base.branding.hospital_name_display,
+        ),
       ),
       attending_naming: pick(
         b.attending_naming,
@@ -434,10 +468,24 @@ export function migrateToV11(
     },
     timings: {
       door_to_ecg_min: num(t.door_to_ecg_min, base.timings.door_to_ecg_min),
-      door_to_balloon_min: num(t.door_to_balloon_min, base.timings.door_to_balloon_min),
-      door_to_needle_min: num(t.door_to_needle_min, base.timings.door_to_needle_min),
-      door_to_ct_min: num(t.door_to_ct_min, base.timings.door_to_ct_min),
-      sepsis_bundle_min: num(t.sepsis_bundle_min, base.timings.sepsis_bundle_min),
+      // V1.1 long-form first; fall back to legacy short-form so older rows still load.
+      stemi_door_to_balloon_min: num(
+        t.stemi_door_to_balloon_min,
+        num(t.door_to_balloon_min, base.timings.stemi_door_to_balloon_min),
+      ),
+      stroke_door_to_needle_min: num(
+        t.stroke_door_to_needle_min,
+        num(t.door_to_needle_min, base.timings.stroke_door_to_needle_min),
+      ),
+      stroke_door_to_ct_min: num(
+        t.stroke_door_to_ct_min,
+        num(t.door_to_ct_min, base.timings.stroke_door_to_ct_min),
+      ),
+      // Hours on the engine; legacy editor wrote minutes — convert if needed.
+      sepsis_bundle_hr: num(
+        t.sepsis_bundle_hr,
+        Number.isFinite(sepsisLegacyHr) ? sepsisLegacyHr : base.timings.sepsis_bundle_hr,
+      ),
       stroke_door_to_device_min: num(
         t.stroke_door_to_device_min,
         base.timings.stroke_door_to_device_min,
@@ -471,10 +519,19 @@ export function migrateToV11(
       ),
     },
     terminology: {
-      term_attending: str(tm.term_attending, base.terminology.term_attending),
-      term_charge_nurse: str(tm.term_charge_nurse, base.terminology.term_charge_nurse),
-      term_rapid_response: str(tm.term_rapid_response, base.terminology.term_rapid_response),
-      term_code_blue: str(tm.term_code_blue, base.terminology.term_code_blue),
+      // V1.1 long-form first; fall back to legacy `term_*` short-form so older
+      // rows still load. `term_attending` / `term_charge_nurse` have no V1.1
+      // analogue and are dropped on read.
+      code_blue: str(tm.code_blue, str(tm.term_code_blue, base.terminology.code_blue)),
+      septic_shock: str(tm.septic_shock, base.terminology.septic_shock),
+      interpreter_service: str(
+        tm.interpreter_service,
+        base.terminology.interpreter_service,
+      ),
+      rapid_response_team: str(
+        tm.rapid_response_team,
+        str(tm.term_rapid_response, base.terminology.rapid_response_team),
+      ),
     },
     scenario_overrides: {
       clinical: engineScenario(sc.clinical),

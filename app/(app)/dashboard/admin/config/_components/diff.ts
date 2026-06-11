@@ -41,7 +41,7 @@ function buildLabels(): Record<string, string> {
     "branding.slug": "Slug",
     "branding.logo_url": "Logo URL",
     "branding.accent_color": "Accent color",
-    "branding.hospital_display_name": "Hospital display name",
+    "branding.hospital_name_display": "Hospital display name",
     "branding.attending_naming": "Attending naming",
     "clinical_overrides.additional_contraindications":
       "Additional contraindications",
