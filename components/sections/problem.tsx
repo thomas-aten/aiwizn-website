@@ -23,23 +23,23 @@ export function Problem() {
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
           <Cell
-            stat="$52K"
-            label="Average savings per retained nurse"
+            stat="35%"
+            label="First-year RN departures linked to weak orientation"
             tone="teal"
           />
           <Cell
-            stat="6–12 mo"
-            label="Time to independent clinical competency"
+            stat="$88K"
+            label="Replacement cost per first-year RN turnover"
             tone="orange"
           />
           <Cell
-            stat="28%"
-            label="Knowledge retained at 6 months"
+            stat="33%"
+            label="First-year RN turnover, national average"
             tone="gold"
           />
           <Cell
-            stat="$917B"
-            label="Projected U.S. shortage cost by 2030"
+            stat="1:6"
+            label="Common preceptor ratio vs. the 1:1 best practice"
             tone="purple"
           />
         </div>
