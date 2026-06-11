@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCustomerContext } from "@/lib/customerContext";
 import { writeAuditEvent } from "@/lib/auditLog";
 import {
+  denormalizeStandingOrders,
   migrateToV11,
   validateProtocolConfig,
   type ClinicalOverridesConfig,
@@ -124,12 +125,24 @@ export async function approveProposal(
     };
   }
 
+  // Sprint 7 — dual-write the engine-facing flat aliases alongside the nested
+  // standing_orders so the engine continues to read its expected top-level
+  // keys. See app/(app)/dashboard/admin/config/_actions.ts → withEngineCompat
+  // for the same logic; duplicated here to avoid a "use server" cross-import.
+  const persistedJson = {
+    ...validated.config,
+    standing_orders: {
+      ...validated.config.standing_orders,
+      ...denormalizeStandingOrders(validated.config.standing_orders),
+    },
+  };
+
   const { data: cfgRow, error: cfgErr } = await supabase
     .from("protocol_configs")
     .insert({
       customer_id: ctx.activeCustomerId,
       engine_slug: CANONICAL_SLUG,
-      config_json: validated.config,
+      config_json: persistedJson,
       version: nextVersion,
       effective_from: new Date().toISOString(),
       created_by: ctx.userId,

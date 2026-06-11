@@ -6,6 +6,7 @@ import { getCustomerContext, type CustomerContext } from "@/lib/customerContext"
 import { writeAuditEvent } from "@/lib/auditLog";
 import {
   clinicalOverridesChanged,
+  denormalizeStandingOrders,
   migrateToV11,
   validateProtocolConfig,
   type ProtocolConfigV11,
@@ -87,6 +88,42 @@ function changedSections(
   );
 }
 
+/**
+ * Build the wire shape we actually persist for a given config.
+ *
+ * The clinical engine (still on the Sprint 6 flat shape; pathway-aware engine
+ * work is deferred to Sprint 7.1) reads top-level keys under
+ * `standing_orders`, e.g. `standing_orders.nurse_initiate_aspirin`. The
+ * editor authors the new nested-by-pathway shape (`standing_orders.stemi.nurse_initiate_aspirin`).
+ *
+ * To keep both readers happy during the transition we dual-write into the
+ * SAME `standing_orders` object:
+ *
+ *   standing_orders: {
+ *     stemi: { ... },              ← authoritative, read by next editor + engine
+ *     stroke: { ... },
+ *     sepsis: { ... },
+ *     general: { ... },
+ *     nurse_initiate_aspirin: "on", ← flat alias the engine reads today
+ *     nurse_cath_lab_activation: "off",
+ *     ...
+ *   }
+ *
+ * The nested branches remain authoritative on read (migrateToV11 prefers them
+ * over the flat aliases). The flat aliases are dropped from disk the moment
+ * the engine ships its pathway-aware reader.
+ */
+function withEngineCompat(config: ProtocolConfigV11): Record<string, unknown> {
+  const flatAliases = denormalizeStandingOrders(config.standing_orders);
+  return {
+    ...config,
+    standing_orders: {
+      ...config.standing_orders,
+      ...flatAliases,
+    },
+  };
+}
+
 /** Insert a new versioned protocol_configs row; returns its id or an error. */
 async function insertConfigVersion(
   supabase: ReturnType<typeof createClient>,
@@ -99,7 +136,7 @@ async function insertConfigVersion(
     .insert({
       customer_id: ctx.activeCustomerId,
       engine_slug: CANONICAL_SLUG,
-      config_json: config,
+      config_json: withEngineCompat(config),
       version,
       effective_from: new Date().toISOString(),
       created_by: ctx.userId,

@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/wordmark";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerContext } from "@/lib/customerContext";
 import { countPendingProposals } from "@/lib/clinicalOverrideProposals";
+import { isPlatformAdmin } from "@/lib/platformAdmin";
 
 type NavItem = { href: string; label: string; badge?: number };
 
@@ -40,6 +41,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       { href: "/dashboard/admin/config", label: "Admin" },
       { href: "/dashboard/admin/reviews", label: "Reviews", badge: pending },
     ];
+    // Sprint 7 — platform admins (admin of all seed customers, see
+    // lib/platformAdmin.ts) get an additional Customers entry for onboarding
+    // new hospitals. Hidden from per-customer admins so the nav stays clean.
+    const gate = await isPlatformAdmin(ctx.userId);
+    if (gate.allowed) {
+      nav = [...nav, { href: "/dashboard/admin/customers", label: "Customers" }];
+    }
   }
 
   // The customer switcher is rendered only for users with >1 membership; a

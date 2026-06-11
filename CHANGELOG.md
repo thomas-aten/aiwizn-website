@@ -6,6 +6,29 @@ The clinical engine and Care Support engine track their own versions in `aiwizn-
 
 ---
 
+## [0.4.0] — 2026-06-11 (Sprint 7)
+
+Two independent landings shipped together; each chunk lives on its own commit group so it can be reverted in isolation.
+
+### Chunk A — Customer onboarding admin UI
+
+- `/dashboard/admin/customers` — platform-admin–only list of all customer workspaces, with member and engine counts at a glance.
+- `/dashboard/admin/customers/new` — self-serve onboarding form. One submit provisions a `customers` row, one `customer_engine_access` row per enabled engine, a v1 `protocol_configs` seeded from `defaultProtocolConfig` for each enabled engine, and a `customer_users` row for the initial admin. Brand-new admin emails get a Supabase magic-link invite via the service-role admin client.
+- `/dashboard/admin/customers/[customerId]` — branding edit (name, accent color, logo URL). Slug is locked at provisioning time.
+- `/dashboard/admin/customers/[customerId]/users` — member roster + invite-by-email form + role assignment. Removing the last admin is refused — promote another member first.
+- `/dashboard/admin/customers/[customerId]/engines` — per-engine `enabled` toggle, license-tier select, and seats input. Toggle takes effect on next page load.
+- New `lib/platformAdmin.ts` gate: a user is treated as a platform admin iff they are `admin` of every Sprint-1 seed customer (Demo Hospital + WakeMed). The set is deliberately locked to the seed cohort — provisioning a new customer here does NOT shift the gate, otherwise the act of creating Duke would lock the creator out of creating UNC. Folds away to a single `role === "platform_admin"` check the moment that named role lands.
+- Server actions in `app/(app)/dashboard/admin/customers/_actions.ts`: `createCustomer`, `updateCustomerBranding`, `inviteCustomerUser`, `removeCustomerUser`, `updateEngineAccess`. All five route through `assertPlatformAdmin` before any write and emit an `audit_log` event via `writeAuditEvent`.
+- Dashboard nav now shows a "Customers" entry only to platform admins.
+
+### Chunk B — Standing-orders pathway-grouped refactor
+
+- `lib/protocolConfig.ts` `StandingOrdersConfig` is now nested by clinical pathway: `stemi` / `stroke` / `sepsis` / `general`. Each within-pathway list is anchored to a recognized framework (AHA Get-With-The-Guidelines STEMI delegation, AHA/ASA stroke-alert delegation, IHI 1-hour sepsis bundle). Each order carries a ternary `mode` — `"off" | "on" | "parallel_notify"` — instead of the prior boolean.
+- `migrateToV11` translates legacy flat-shape rows into the new nested shape with reasonable defaults. Renamed legacy keys (`nurse_administer_aspirin` → `stemi.nurse_initiate_aspirin`), compound legacy keys (`nurse_initiate_sepsis_bundle` → both `sepsis.nurse_initiate_blood_cultures` and `sepsis.nurse_initiate_lactate`), and unchanged keys (`stemi.nurse_initiate_ecg`, `general.pharmacist_renal_adjust`) all carry through. New orders introduced by the refactor (cath-lab activation, stroke alert, broad-spectrum abx, …) take their default seed value where no prior data exists.
+- `ConfigEditor.tsx` section 3 now renders four collapsible pathway groups with a three-button radio per order (Off / On / Parallel notify). Anchor citations show under each group header.
+- `diff.ts` label map is updated to the new keys, namespaced by pathway (e.g. `STEMI · Nurse may obtain ECG`). The flattener descends into the `.mode` leaf so a single mode change shows as one diff row.
+- **Engine integration deferred.** The clinical engine still reads the flat shape (Sprint 7.1 engine repo work). Until it migrates, `publishConfig` (and `approveProposal`) **dual-write**: the nested `standing_orders` object is authoritative, and `denormalizeStandingOrders` produces a flat `standing_orders_engine_flat` mirror that rides alongside in `config_json`. Cross-pathway duplicates (e.g. `nurse_administer_oxygen` under both STEMI and stroke) collapse to the strongest mode (`parallel_notify` > `on` > `off`). The legacy `nurse_initiate_sepsis_bundle` flag the engine still reads is preserved as the strongest mode of the two underlying sepsis orders.
+
 ## [0.3.0] — 2026-06-11 (Sprint 6.2)
 
 - **Config editor / engine dialect alignment.** The dashboard config editor was writing short-form timing/terminology/branding keys (`door_to_balloon_min`, `term_code_blue`, `hospital_display_name`) while the clinical engine and V1.1 spec read long-form keys (`stemi_door_to_balloon_min`, `code_blue`, `hospital_name_display`). The mismatch caused seed values to be silently lost — `migrateToV11` couldn't find the engine's keys and fell back to base defaults, then the editor wrote its short-form dialect back on publish. Editor is now the source of truth for V1.1 long-form keys throughout.

@@ -53,15 +53,70 @@ export interface TimingsConfig {
   stroke_door_to_device_min: number;
 }
 
-export interface StandingOrdersConfig {
-  nurse_initiate_ecg: boolean;
-  nurse_initiate_troponin: boolean;
-  nurse_administer_aspirin: boolean;
-  nurse_initiate_sepsis_bundle: boolean;
-  nurse_normal_saline_bolus: boolean;
-  pharmacist_dose_heparin: boolean;
-  pharmacist_renal_adjust: boolean;
+/**
+ * Standing-orders schema — Sprint 7
+ * ---------------------------------
+ * Orders are grouped by clinical pathway (STEMI / Stroke / Sepsis / General).
+ * Each within-pathway list is anchored to a recognized framework:
+ *   • STEMI    — AHA Get-With-The-Guidelines delegation set
+ *   • Stroke   — AHA / ASA stroke-alert delegation
+ *   • Sepsis   — IHI 1-hour bundle / Surviving Sepsis
+ *   • General  — pathway-agnostic delegations (renal adjustments, escalation)
+ *
+ * Each order carries a ternary mode (Sprint 6 carryover):
+ *   • "off"             — order is disabled
+ *   • "on"              — order may be executed by the delegated role
+ *   • "parallel_notify" — order may be executed AND a notify is sent to the
+ *     supervising clinician in parallel
+ *
+ * The clinical engine has not yet migrated to the nested shape (Sprint 7.1
+ * engine-side work). Until then, {@link denormalizeStandingOrders} flattens
+ * the nested values back to the engine's expected top-level keys so the
+ * editor can dual-write the same publish round-trip.
+ */
+export type StandingOrderMode = "off" | "on" | "parallel_notify";
+
+export interface StandingOrderEntry {
+  mode: StandingOrderMode;
 }
+
+export interface StemiStandingOrders {
+  nurse_initiate_aspirin: StandingOrderEntry;
+  nurse_cath_lab_activation: StandingOrderEntry;
+  nurse_initiate_ecg: StandingOrderEntry;
+  nurse_administer_oxygen: StandingOrderEntry;
+  nurse_initiate_troponin: StandingOrderEntry;
+  pharmacist_dose_heparin: StandingOrderEntry;
+}
+
+export interface StrokeStandingOrders {
+  nurse_initiate_stroke_alert: StandingOrderEntry;
+  nurse_initiate_ct: StandingOrderEntry;
+  nurse_administer_oxygen: StandingOrderEntry;
+  pharmacist_dispense_tpa: StandingOrderEntry;
+}
+
+export interface SepsisStandingOrders {
+  nurse_initiate_blood_cultures: StandingOrderEntry;
+  nurse_initiate_broad_spectrum_abx: StandingOrderEntry;
+  nurse_initiate_lactate: StandingOrderEntry;
+  nurse_normal_saline_bolus: StandingOrderEntry;
+  pharmacist_dispense_stat_abx_without_cosignature: StandingOrderEntry;
+}
+
+export interface GeneralStandingOrders {
+  direct_attending_escalation: StandingOrderEntry;
+  pharmacist_renal_adjust: StandingOrderEntry;
+}
+
+export interface StandingOrdersConfig {
+  stemi: StemiStandingOrders;
+  stroke: StrokeStandingOrders;
+  sepsis: SepsisStandingOrders;
+  general: GeneralStandingOrders;
+}
+
+export type StandingOrderPathway = keyof StandingOrdersConfig;
 
 /**
  * Terminology overrides — V1.1 keys (no `term_` prefix), matching the engine.
@@ -198,54 +253,180 @@ export const TIMING_FIELDS: TimingField[] = [
 ];
 
 export type StandingOrderField = {
-  key: keyof StandingOrdersConfig;
+  /** Order key within its pathway (typed as string at the array boundary; the
+   * concrete pathway interface is what gets validated at runtime). */
+  key: string;
   label: string;
   /** Clinical implication shown as a tooltip. */
   tooltip: string;
 };
 
-export const STANDING_ORDER_FIELDS: StandingOrderField[] = [
+export type PathwayGroup = {
+  key: StandingOrderPathway;
+  label: string;
+  anchor: string;
+  orders: StandingOrderField[];
+};
+
+export const STANDING_ORDER_GROUPS: PathwayGroup[] = [
   {
-    key: "nurse_initiate_ecg",
-    label: "Nurse may obtain 12-lead ECG at triage",
-    tooltip:
-      "Allows triage RN to capture a 12-lead ECG before a physician order, supporting the ≤10 min door-to-ECG target for chest-pain presentations.",
+    key: "stemi",
+    label: "STEMI",
+    anchor: "AHA Get-With-The-Guidelines · STEMI delegation",
+    orders: [
+      {
+        key: "nurse_initiate_aspirin",
+        label: "Nurse may administer chewable ASA 324 mg",
+        tooltip:
+          "Permits RN to give aspirin per the ACS standing order absent contraindication (active bleed, documented allergy).",
+      },
+      {
+        key: "nurse_cath_lab_activation",
+        label: "Nurse may activate the cath lab",
+        tooltip:
+          "Allows triage RN to activate the cath lab on EKG-confirmed STEMI, protecting the ≤90 min door-to-balloon target.",
+      },
+      {
+        key: "nurse_initiate_ecg",
+        label: "Nurse may obtain 12-lead ECG at triage",
+        tooltip:
+          "Allows triage RN to capture a 12-lead ECG before a physician order, supporting the ≤10 min door-to-ECG target for chest-pain presentations.",
+      },
+      {
+        key: "nurse_administer_oxygen",
+        label: "Nurse may administer oxygen (titrated to SpO₂ ≥ 90%)",
+        tooltip:
+          "Permits RN-initiated supplemental O₂ for hypoxemic STEMI per the ACS standing order.",
+      },
+      {
+        key: "nurse_initiate_troponin",
+        label: "Nurse may draw troponin on chest-pain protocol",
+        tooltip:
+          "Permits RN-initiated troponin draw under the chest-pain standing order, shortening time to first biomarker result.",
+      },
+      {
+        key: "pharmacist_dose_heparin",
+        label: "Pharmacist may dose weight-based heparin",
+        tooltip:
+          "Delegates weight-based heparin dosing and titration to pharmacy per the anticoagulation protocol.",
+      },
+    ],
   },
   {
-    key: "nurse_initiate_troponin",
-    label: "Nurse may draw troponin on chest-pain protocol",
-    tooltip:
-      "Permits RN-initiated troponin draw under the chest-pain standing order, shortening time to first biomarker result.",
+    key: "stroke",
+    label: "Stroke",
+    anchor: "AHA / ASA · stroke-alert delegation",
+    orders: [
+      {
+        key: "nurse_initiate_stroke_alert",
+        label: "Nurse may initiate stroke-alert",
+        tooltip:
+          "Allows RN to call a stroke alert on positive LAMS/Cincinnati screen, mobilizing the team in parallel with physician evaluation.",
+      },
+      {
+        key: "nurse_initiate_ct",
+        label: "Nurse may transport directly to CT",
+        tooltip:
+          "Permits RN to move the patient to non-contrast head CT on stroke-alert, supporting the ≤25 min door-to-CT target.",
+      },
+      {
+        key: "nurse_administer_oxygen",
+        label: "Nurse may administer oxygen (titrated to SpO₂ ≥ 94%)",
+        tooltip:
+          "Permits RN-initiated O₂ for hypoxemic stroke presentations per AHA/ASA standing order.",
+      },
+      {
+        key: "pharmacist_dispense_tpa",
+        label: "Pharmacist may dispense weight-based alteplase",
+        tooltip:
+          "Delegates alteplase preparation and dispense to pharmacy once eligibility is confirmed by the treating physician.",
+      },
+    ],
   },
   {
-    key: "nurse_administer_aspirin",
-    label: "Nurse may administer chewable ASA 324 mg",
-    tooltip:
-      "Permits RN to give aspirin per the ACS standing order absent contraindication (active bleed, documented allergy).",
+    key: "sepsis",
+    label: "Sepsis",
+    anchor: "IHI 1-hour bundle / Surviving Sepsis",
+    orders: [
+      {
+        key: "nurse_initiate_blood_cultures",
+        label: "Nurse may obtain blood cultures",
+        tooltip:
+          "Allows RN to draw cultures BEFORE antibiotics on a positive sepsis screen, protecting the 1-hour bundle.",
+      },
+      {
+        key: "nurse_initiate_broad_spectrum_abx",
+        label: "Nurse may initiate broad-spectrum antibiotics",
+        tooltip:
+          "Permits RN to start the first dose of broad-spectrum antibiotics once cultures are drawn, per the sepsis standing order.",
+      },
+      {
+        key: "nurse_initiate_lactate",
+        label: "Nurse may draw lactate",
+        tooltip:
+          "Allows RN-initiated lactate draw on positive sepsis screen, supporting the 1-hour bundle window.",
+      },
+      {
+        key: "nurse_normal_saline_bolus",
+        label: "Nurse may start 30 mL/kg NS bolus",
+        tooltip:
+          "Permits RN-initiated crystalloid resuscitation per the sepsis standing order. Use caution in CHF / ESRD — see clinical overrides.",
+      },
+      {
+        key: "pharmacist_dispense_stat_abx_without_cosignature",
+        label: "Pharmacist may dispense STAT antibiotics without co-signature",
+        tooltip:
+          "Delegates STAT antibiotic dispense to pharmacy on sepsis alerts without waiting for physician co-signature.",
+      },
+    ],
   },
   {
-    key: "nurse_initiate_sepsis_bundle",
-    label: "Nurse may initiate lactate + blood cultures on sepsis screen",
-    tooltip:
-      "Allows RN to draw lactate and obtain cultures before antibiotics on a positive sepsis screen, protecting the 3-hour bundle window.",
+    key: "general",
+    label: "General",
+    anchor: "Pathway-agnostic delegations",
+    orders: [
+      {
+        key: "direct_attending_escalation",
+        label: "Direct attending escalation (skip resident layer)",
+        tooltip:
+          "Allows RN to escalate directly to the attending on clinical deterioration without paging the resident first.",
+      },
+      {
+        key: "pharmacist_renal_adjust",
+        label: "Pharmacist may renally adjust anticoagulants",
+        tooltip:
+          "Permits pharmacy to adjust anticoagulant dosing for renal function without a new physician order.",
+      },
+    ],
   },
+];
+
+/** Flat list — convenient when a consumer needs every (pathway, key) pair. */
+export const STANDING_ORDER_FIELDS: {
+  pathway: StandingOrderPathway;
+  key: string;
+  label: string;
+  tooltip: string;
+}[] = STANDING_ORDER_GROUPS.flatMap((g) =>
+  g.orders.map((o) => ({
+    pathway: g.key,
+    key: o.key,
+    label: o.label,
+    tooltip: o.tooltip,
+  })),
+);
+
+export const STANDING_ORDER_MODE_OPTIONS: {
+  value: StandingOrderMode;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "off", label: "Off", hint: "Disabled — physician order required." },
+  { value: "on", label: "On", hint: "Delegated role may execute the order." },
   {
-    key: "nurse_normal_saline_bolus",
-    label: "Nurse may start 30 mL/kg NS bolus (sepsis)",
-    tooltip:
-      "Permits RN-initiated crystalloid resuscitation per the sepsis standing order. Use caution in CHF / ESRD — see clinical overrides.",
-  },
-  {
-    key: "pharmacist_dose_heparin",
-    label: "Pharmacist may dose weight-based heparin",
-    tooltip:
-      "Delegates weight-based heparin dosing and titration to pharmacy per the anticoagulation protocol.",
-  },
-  {
-    key: "pharmacist_renal_adjust",
-    label: "Pharmacist may renally adjust anticoagulants",
-    tooltip:
-      "Permits pharmacy to adjust anticoagulant dosing for renal function without a new physician order.",
+    value: "parallel_notify",
+    label: "Parallel notify",
+    hint: "Delegated role executes AND notifies the supervising clinician.",
   },
 ];
 
@@ -316,6 +497,48 @@ function defaultStaffScope(): StaffRoleScope {
   };
 }
 
+/**
+ * Canonical seed for a fresh standing-orders config. Most orders default to
+ * "on" so the engine has a useful baseline to demonstrate; high-acuity
+ * delegations that some sites want gated (parallel_notify) start at "off".
+ */
+function defaultStandingOrders(): StandingOrdersConfig {
+  // Fresh entry objects per key — sharing a single { mode: "on" } reference
+  // across keys would leak any later mutation across fields. The codebase
+  // treats config as immutable, but defaultStandingOrders is the seed for
+  // editor state and provisioned customers, so the cost of a few extra object
+  // literals is worth the safety.
+  const on = (): StandingOrderEntry => ({ mode: "on" });
+  const off = (): StandingOrderEntry => ({ mode: "off" });
+  return {
+    stemi: {
+      nurse_initiate_aspirin: on(),
+      nurse_cath_lab_activation: off(),
+      nurse_initiate_ecg: on(),
+      nurse_administer_oxygen: on(),
+      nurse_initiate_troponin: off(),
+      pharmacist_dose_heparin: on(),
+    },
+    stroke: {
+      nurse_initiate_stroke_alert: on(),
+      nurse_initiate_ct: off(),
+      nurse_administer_oxygen: on(),
+      pharmacist_dispense_tpa: off(),
+    },
+    sepsis: {
+      nurse_initiate_blood_cultures: on(),
+      nurse_initiate_broad_spectrum_abx: off(),
+      nurse_initiate_lactate: on(),
+      nurse_normal_saline_bolus: off(),
+      pharmacist_dispense_stat_abx_without_cosignature: off(),
+    },
+    general: {
+      direct_attending_escalation: off(),
+      pharmacist_renal_adjust: on(),
+    },
+  };
+}
+
 function defaultEngineScenario(): EngineScenarioOverride {
   return {
     variant: "standard",
@@ -347,15 +570,7 @@ export function defaultProtocolConfig(
       sepsis_bundle_hr: 3,
       stroke_door_to_device_min: 90,
     },
-    standing_orders: {
-      nurse_initiate_ecg: true,
-      nurse_initiate_troponin: false,
-      nurse_administer_aspirin: true,
-      nurse_initiate_sepsis_bundle: true,
-      nurse_normal_saline_bolus: false,
-      pharmacist_dose_heparin: true,
-      pharmacist_renal_adjust: true,
-    },
+    standing_orders: defaultStandingOrders(),
     terminology: {
       code_blue: "Code Blue",
       septic_shock: "Septic Shock",
@@ -381,6 +596,267 @@ export function defaultProtocolConfig(
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
+
+const STANDING_ORDER_MODES: readonly StandingOrderMode[] = [
+  "off",
+  "on",
+  "parallel_notify",
+];
+
+/**
+ * Pull a single order entry out of a stored blob.
+ *
+ * Three shapes are recognized:
+ *   1. Nested + new: `{ stemi: { nurse_initiate_aspirin: { mode: "on" } } }`
+ *   2. Nested + boolean: `{ stemi: { nurse_initiate_aspirin: true } }`
+ *      (transient state during the editor refactor)
+ *   3. Flat legacy:    `{ standing_orders: { nurse_initiate_ecg: true } }`
+ *
+ * For (3), the raw flat object is passed in as `flat` and looked up by key.
+ * For all shapes, an unknown value falls back to `fallback`.
+ */
+function readOrderEntry(
+  pathwayValue: unknown,
+  key: string,
+  flat: Record<string, unknown> | undefined,
+  fallback: StandingOrderEntry,
+): StandingOrderEntry {
+  // Try nested-new first.
+  if (isRecord(pathwayValue) && key in pathwayValue) {
+    const v = pathwayValue[key];
+    if (isRecord(v) && typeof v.mode === "string") {
+      const m = v.mode as StandingOrderMode;
+      if (STANDING_ORDER_MODES.includes(m)) return { mode: m };
+    }
+    // Transient boolean during refactor.
+    if (typeof v === "boolean") return { mode: v ? "on" : "off" };
+  }
+  // Flat legacy fallback.
+  if (flat && key in flat) {
+    const v = flat[key];
+    if (typeof v === "boolean") return { mode: v ? "on" : "off" };
+    if (isRecord(v) && typeof v.mode === "string") {
+      const m = v.mode as StandingOrderMode;
+      if (STANDING_ORDER_MODES.includes(m)) return { mode: m };
+    }
+  }
+  return fallback;
+}
+
+/**
+ * Translate a stored `standing_orders` blob to the v1.1 nested shape.
+ *
+ * Old flat keys map to their natural pathway as follows (Sprint 6.2 → 7):
+ *   nurse_initiate_ecg          → stemi.nurse_initiate_ecg
+ *   nurse_initiate_troponin     → stemi.nurse_initiate_troponin
+ *   nurse_administer_aspirin    → stemi.nurse_initiate_aspirin (renamed)
+ *   pharmacist_dose_heparin     → stemi.pharmacist_dose_heparin
+ *   nurse_initiate_sepsis_bundle → sepsis.nurse_initiate_blood_cultures + nurse_initiate_lactate
+ *                                  (the legacy single toggle covered both)
+ *   nurse_normal_saline_bolus   → sepsis.nurse_normal_saline_bolus
+ *   pharmacist_renal_adjust     → general.pharmacist_renal_adjust
+ *
+ * Newly-introduced orders (cath-lab activation, stroke alert, broad-spectrum
+ * abx, …) take the default seed value when no prior data exists for them.
+ */
+function migrateStandingOrders(
+  so: Record<string, unknown>,
+  base: StandingOrdersConfig,
+): StandingOrdersConfig {
+  // If the blob is already nested, treat it as authoritative. The flat-legacy
+  // map (`flat`) is the FULL flat object; we only fall back to it for keys the
+  // nested object doesn't carry.
+  const hasNested =
+    isRecord(so.stemi) ||
+    isRecord(so.stroke) ||
+    isRecord(so.sepsis) ||
+    isRecord(so.general);
+
+  const flat: Record<string, unknown> | undefined = hasNested ? undefined : so;
+  const flatNarrow = flat;
+
+  // Legacy `nurse_initiate_sepsis_bundle` was a single toggle that gated both
+  // blood cultures and lactate draws — splitting it across both nested keys
+  // preserves the operator's intent rather than dropping the value.
+  const sepsisBundleLegacy: StandingOrderEntry | null =
+    flatNarrow && typeof flatNarrow.nurse_initiate_sepsis_bundle === "boolean"
+      ? {
+          mode: (flatNarrow.nurse_initiate_sepsis_bundle as boolean)
+            ? "on"
+            : "off",
+        }
+      : null;
+
+  // Legacy `nurse_administer_aspirin` is the same delegation as the new
+  // `nurse_initiate_aspirin` key — copy it across so renamed legacy data
+  // survives the migration.
+  const aspirinLegacyAlias: StandingOrderEntry | null =
+    flatNarrow && typeof flatNarrow.nurse_administer_aspirin === "boolean"
+      ? {
+          mode: (flatNarrow.nurse_administer_aspirin as boolean) ? "on" : "off",
+        }
+      : null;
+
+  return {
+    stemi: {
+      nurse_initiate_aspirin: readOrderEntry(
+        so.stemi,
+        "nurse_initiate_aspirin",
+        flatNarrow,
+        aspirinLegacyAlias ?? base.stemi.nurse_initiate_aspirin,
+      ),
+      nurse_cath_lab_activation: readOrderEntry(
+        so.stemi,
+        "nurse_cath_lab_activation",
+        flatNarrow,
+        base.stemi.nurse_cath_lab_activation,
+      ),
+      nurse_initiate_ecg: readOrderEntry(
+        so.stemi,
+        "nurse_initiate_ecg",
+        flatNarrow,
+        base.stemi.nurse_initiate_ecg,
+      ),
+      nurse_administer_oxygen: readOrderEntry(
+        so.stemi,
+        "nurse_administer_oxygen",
+        flatNarrow,
+        base.stemi.nurse_administer_oxygen,
+      ),
+      nurse_initiate_troponin: readOrderEntry(
+        so.stemi,
+        "nurse_initiate_troponin",
+        flatNarrow,
+        base.stemi.nurse_initiate_troponin,
+      ),
+      pharmacist_dose_heparin: readOrderEntry(
+        so.stemi,
+        "pharmacist_dose_heparin",
+        flatNarrow,
+        base.stemi.pharmacist_dose_heparin,
+      ),
+    },
+    stroke: {
+      nurse_initiate_stroke_alert: readOrderEntry(
+        so.stroke,
+        "nurse_initiate_stroke_alert",
+        flatNarrow,
+        base.stroke.nurse_initiate_stroke_alert,
+      ),
+      nurse_initiate_ct: readOrderEntry(
+        so.stroke,
+        "nurse_initiate_ct",
+        flatNarrow,
+        base.stroke.nurse_initiate_ct,
+      ),
+      nurse_administer_oxygen: readOrderEntry(
+        so.stroke,
+        "nurse_administer_oxygen",
+        flatNarrow,
+        base.stroke.nurse_administer_oxygen,
+      ),
+      pharmacist_dispense_tpa: readOrderEntry(
+        so.stroke,
+        "pharmacist_dispense_tpa",
+        flatNarrow,
+        base.stroke.pharmacist_dispense_tpa,
+      ),
+    },
+    sepsis: {
+      nurse_initiate_blood_cultures: readOrderEntry(
+        so.sepsis,
+        "nurse_initiate_blood_cultures",
+        flatNarrow,
+        sepsisBundleLegacy ?? base.sepsis.nurse_initiate_blood_cultures,
+      ),
+      nurse_initiate_broad_spectrum_abx: readOrderEntry(
+        so.sepsis,
+        "nurse_initiate_broad_spectrum_abx",
+        flatNarrow,
+        base.sepsis.nurse_initiate_broad_spectrum_abx,
+      ),
+      nurse_initiate_lactate: readOrderEntry(
+        so.sepsis,
+        "nurse_initiate_lactate",
+        flatNarrow,
+        sepsisBundleLegacy ?? base.sepsis.nurse_initiate_lactate,
+      ),
+      nurse_normal_saline_bolus: readOrderEntry(
+        so.sepsis,
+        "nurse_normal_saline_bolus",
+        flatNarrow,
+        base.sepsis.nurse_normal_saline_bolus,
+      ),
+      pharmacist_dispense_stat_abx_without_cosignature: readOrderEntry(
+        so.sepsis,
+        "pharmacist_dispense_stat_abx_without_cosignature",
+        flatNarrow,
+        base.sepsis.pharmacist_dispense_stat_abx_without_cosignature,
+      ),
+    },
+    general: {
+      direct_attending_escalation: readOrderEntry(
+        so.general,
+        "direct_attending_escalation",
+        flatNarrow,
+        base.general.direct_attending_escalation,
+      ),
+      pharmacist_renal_adjust: readOrderEntry(
+        so.general,
+        "pharmacist_renal_adjust",
+        flatNarrow,
+        base.general.pharmacist_renal_adjust,
+      ),
+    },
+  };
+}
+
+/**
+ * Engine-facing flat shape — denormalized from the nested config.
+ *
+ * The clinical engine (Sprint 6 era) still reads top-level boolean / mode keys
+ * on `standing_orders`. Until the engine ships its own pathway-aware
+ * representation (Sprint 7.1 engine repo work), the editor dual-writes both
+ * shapes on publish: the nested object stays authoritative, and these flat
+ * keys ride alongside so the engine continues to behave.
+ *
+ * Rules:
+ *   • Cross-pathway duplicates (e.g. `nurse_administer_oxygen` lives under both
+ *     stemi and stroke) collapse to a single flat key using the strongest mode
+ *     across the pathways (parallel_notify > on > off).
+ *   • Legacy compound keys the engine still reads (`nurse_initiate_sepsis_bundle`)
+ *     mirror the strongest mode of any contributing nested key.
+ */
+export function denormalizeStandingOrders(
+  s: StandingOrdersConfig,
+): Record<string, StandingOrderMode> {
+  const flat: Record<string, StandingOrderMode> = {};
+  const max = (a: StandingOrderMode, b: StandingOrderMode): StandingOrderMode => {
+    const rank: Record<StandingOrderMode, number> = {
+      off: 0,
+      on: 1,
+      parallel_notify: 2,
+    };
+    return rank[a] >= rank[b] ? a : b;
+  };
+  const put = (k: string, m: StandingOrderMode) => {
+    flat[k] = flat[k] ? max(flat[k], m) : m;
+  };
+  for (const group of Object.values(s) as Record<string, StandingOrderEntry>[]) {
+    for (const [k, v] of Object.entries(group)) {
+      put(k, v.mode);
+    }
+  }
+  // Legacy compound the engine still reads — strongest of the two underlying
+  // sepsis orders.
+  flat.nurse_initiate_sepsis_bundle = max(
+    s.sepsis.nurse_initiate_blood_cultures.mode,
+    s.sepsis.nurse_initiate_lactate.mode,
+  );
+  // Legacy alias for the renamed aspirin key.
+  flat.nurse_administer_aspirin = s.stemi.nurse_initiate_aspirin.mode;
+  return flat;
+}
 
 function str(v: unknown, fallback: string): string {
   return typeof v === "string" ? v : fallback;
@@ -491,33 +967,7 @@ export function migrateToV11(
         base.timings.stroke_door_to_device_min,
       ),
     },
-    standing_orders: {
-      nurse_initiate_ecg: bool(so.nurse_initiate_ecg, base.standing_orders.nurse_initiate_ecg),
-      nurse_initiate_troponin: bool(
-        so.nurse_initiate_troponin,
-        base.standing_orders.nurse_initiate_troponin,
-      ),
-      nurse_administer_aspirin: bool(
-        so.nurse_administer_aspirin,
-        base.standing_orders.nurse_administer_aspirin,
-      ),
-      nurse_initiate_sepsis_bundle: bool(
-        so.nurse_initiate_sepsis_bundle,
-        base.standing_orders.nurse_initiate_sepsis_bundle,
-      ),
-      nurse_normal_saline_bolus: bool(
-        so.nurse_normal_saline_bolus,
-        base.standing_orders.nurse_normal_saline_bolus,
-      ),
-      pharmacist_dose_heparin: bool(
-        so.pharmacist_dose_heparin,
-        base.standing_orders.pharmacist_dose_heparin,
-      ),
-      pharmacist_renal_adjust: bool(
-        so.pharmacist_renal_adjust,
-        base.standing_orders.pharmacist_renal_adjust,
-      ),
-    },
+    standing_orders: migrateStandingOrders(so, base.standing_orders),
     terminology: {
       // V1.1 long-form first; fall back to legacy `term_*` short-form so older
       // rows still load. `term_attending` / `term_charge_nurse` have no V1.1
@@ -619,9 +1069,30 @@ export function validateProtocolConfig(raw: unknown): ValidationResult {
   if (!so) {
     errors.push("Missing standing_orders section.");
   } else {
-    for (const f of STANDING_ORDER_FIELDS) {
-      if (typeof so[f.key] !== "boolean")
-        errors.push(`Standing orders: "${f.label}" must be on or off.`);
+    for (const group of STANDING_ORDER_GROUPS) {
+      const pathwayVal = so[group.key];
+      const pathway = isRecord(pathwayVal) ? pathwayVal : null;
+      if (!pathway) {
+        errors.push(`Standing orders: missing ${group.label} pathway.`);
+        continue;
+      }
+      for (const order of group.orders) {
+        const entry = pathway[order.key];
+        if (!isRecord(entry)) {
+          errors.push(
+            `Standing orders: ${group.label} · "${order.label}" must be an object.`,
+          );
+          continue;
+        }
+        if (
+          typeof entry.mode !== "string" ||
+          !["off", "on", "parallel_notify"].includes(entry.mode)
+        ) {
+          errors.push(
+            `Standing orders: ${group.label} · "${order.label}" mode is invalid.`,
+          );
+        }
+      }
     }
   }
 

@@ -9,13 +9,18 @@ import {
   SCENARIO_VARIANT_OPTIONS,
   STAFF_ROLES,
   STAFF_SCOPE_FIELDS,
-  STANDING_ORDER_FIELDS,
+  STANDING_ORDER_GROUPS,
+  STANDING_ORDER_MODE_OPTIONS,
   TERMINOLOGY_FIELDS,
   TIMING_FIELDS,
   validateProtocolConfig,
   type ProtocolConfigV11,
   type ScenarioOverridesConfig,
   type StaffRolesConfig,
+  type StandingOrderEntry,
+  type StandingOrderMode,
+  type StandingOrderPathway,
+  type StandingOrdersConfig,
 } from "@/lib/protocolConfig";
 import type { CustomerRole } from "@/lib/customerContext";
 import { publishConfig, type PublishResult } from "../_actions";
@@ -54,8 +59,31 @@ export function ConfigEditor({
     patch("branding", { ...config.branding, ...p });
   const setTimings = (p: Partial<ProtocolConfigV11["timings"]>) =>
     patch("timings", { ...config.timings, ...p });
-  const setStanding = (p: Partial<ProtocolConfigV11["standing_orders"]>) =>
-    patch("standing_orders", { ...config.standing_orders, ...p });
+  /**
+   * Update a single (pathway, orderKey) entry. The standing-orders schema is
+   * nested two levels deep — the top-level setter clones the pathway record
+   * before splicing in the new entry so React state stays immutable. The
+   * pathway interfaces don't share keys, so we tunnel through an indexable
+   * record type to keep the spread well-typed.
+   */
+  const setStandingOrder = (
+    pathway: StandingOrderPathway,
+    orderKey: string,
+    mode: StandingOrderMode,
+  ) => {
+    const so = config.standing_orders as unknown as Record<
+      StandingOrderPathway,
+      Record<string, StandingOrderEntry>
+    >;
+    const nextPathway: Record<string, StandingOrderEntry> = {
+      ...so[pathway],
+      [orderKey]: { mode },
+    };
+    patch(
+      "standing_orders",
+      ({ ...so, [pathway]: nextPathway } as unknown) as StandingOrdersConfig,
+    );
+  };
   const setTerm = (p: Partial<ProtocolConfigV11["terminology"]>) =>
     patch("terminology", { ...config.terminology, ...p });
   const setScenario = (
@@ -214,19 +242,43 @@ export function ConfigEditor({
         </Grid>
       </Section>
 
-      {/* 3. Standing orders ---------------------------------------------- */}
+      {/* 3. Standing orders (pathway-grouped) ---------------------------- */}
       <Section title="Standing orders" n={3}>
-        <div className="space-y-1">
-          {STANDING_ORDER_FIELDS.map((f) => (
-            <ToggleRow
-              key={f.key}
-              label={f.label}
-              tooltip={f.tooltip}
-              checked={config.standing_orders[f.key]}
-              onChange={(v) => setStanding({ [f.key]: v } as never)}
-              disabled={ro}
-            />
-          ))}
+        <p className="mb-3 text-[11px] leading-snug text-ink-3">
+          Orders are grouped by pathway. Each toggle is ternary —{" "}
+          <strong>Off</strong>, <strong>On</strong>, or{" "}
+          <strong>On + parallel notify</strong> (executes and pages the
+          supervising clinician in parallel).
+        </p>
+        <div className="space-y-3">
+          {STANDING_ORDER_GROUPS.map((group) => {
+            const pathway = config.standing_orders[
+              group.key
+            ] as unknown as Record<string, StandingOrderEntry>;
+            return (
+              <PathwayGroupCard
+                key={group.key}
+                label={group.label}
+                anchor={group.anchor}
+              >
+                {group.orders.map((order) => {
+                  const entry = pathway[order.key];
+                  return (
+                    <ModeRow
+                      key={order.key}
+                      label={order.label}
+                      tooltip={order.tooltip}
+                      mode={entry?.mode ?? "off"}
+                      onChange={(m) =>
+                        setStandingOrder(group.key, order.key, m)
+                      }
+                      disabled={ro}
+                    />
+                  );
+                })}
+              </PathwayGroupCard>
+            );
+          })}
         </div>
       </Section>
 
@@ -803,6 +855,104 @@ function Switch({
         }`}
       />
     </button>
+  );
+}
+
+/**
+ * Collapsible pathway-group container for standing orders. Open by default;
+ * collapses on click. Mirrors the visual weight of a Section without the
+ * numbered chrome (the parent Section already owns the numbering).
+ */
+function PathwayGroupCard({
+  label,
+  anchor,
+  children,
+}: {
+  label: string;
+  anchor: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="rounded-xl border border-ink/10 bg-cream-light/40">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-ink/[0.02]"
+      >
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-label text-ink-3">
+            Pathway
+          </p>
+          <h3 className="mt-0.5 font-display text-lg text-ink">{label}</h3>
+          <p className="mt-0.5 text-[11px] text-ink-3">{anchor}</p>
+        </div>
+        <span className="font-mono text-xs text-ink-3">
+          {open ? "Collapse ▲" : "Expand ▼"}
+        </span>
+      </button>
+      {open && (
+        <div className="border-t border-ink/10 px-4 py-3">{children}</div>
+      )}
+    </div>
+  );
+}
+
+/** Three-button radio for a standing-order mode (Off / On / Parallel notify). */
+function ModeRow({
+  label,
+  tooltip,
+  mode,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  tooltip: string;
+  mode: StandingOrderMode;
+  onChange: (m: StandingOrderMode) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-ink/5 py-2.5 last:border-0">
+      <span className="flex max-w-[60%] items-center gap-1.5 text-sm text-ink-2">
+        {label}
+        <span
+          tabIndex={0}
+          title={tooltip}
+          className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-ink/20 font-mono text-[9px] text-ink-3"
+          aria-label={tooltip}
+        >
+          i
+        </span>
+      </span>
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="flex shrink-0 overflow-hidden rounded-lg border border-ink/15 bg-white"
+      >
+        {STANDING_ORDER_MODE_OPTIONS.map((opt) => {
+          const active = opt.value === mode;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              title={opt.hint}
+              disabled={disabled}
+              onClick={() => !disabled && onChange(opt.value)}
+              className={`px-2.5 py-1 font-mono text-[10px] uppercase tracking-label transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                active
+                  ? "bg-teal text-white"
+                  : "text-ink-3 hover:bg-ink/[0.04] hover:text-ink"
+              }`}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

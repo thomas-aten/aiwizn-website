@@ -2,7 +2,7 @@ import {
   SCENARIO_ENGINES,
   STAFF_ROLES,
   STAFF_SCOPE_FIELDS,
-  STANDING_ORDER_FIELDS,
+  STANDING_ORDER_GROUPS,
   TERMINOLOGY_FIELDS,
   TIMING_FIELDS,
   type ProtocolConfigV11,
@@ -13,6 +13,11 @@ import {
  * changed leaf value with a human-readable label and before/after strings for
  * the side-by-side review table. No external dependency — the config shape is
  * fixed and shallow enough to flatten by hand.
+ *
+ * Sprint 7 — standing_orders moved from flat booleans to nested pathway groups
+ * carrying `{ mode }`. The label map now namespaces orders by pathway
+ * (`STEMI · Nurse may obtain ECG`) and the diff descends into the inner
+ * `.mode` so a single-entry change shows up as one row, not two.
  */
 
 export type DiffEntry = {
@@ -28,9 +33,16 @@ export type DiffEntry = {
 
 export type ConfigDiff = DiffEntry[];
 
+/** Human-friendly rendering for diff values. */
 const fmt = (v: unknown): string => {
   if (typeof v === "boolean") return v ? "On" : "Off";
   if (v === "" || v === null || v === undefined) return "—";
+  if (typeof v === "string") {
+    // Standing-order modes get a short readable form.
+    if (v === "off") return "Off";
+    if (v === "on") return "On";
+    if (v === "parallel_notify") return "On + parallel notify";
+  }
   return String(v);
 };
 
@@ -50,7 +62,12 @@ function buildLabels(): Record<string, string> {
     "clinical_overrides.sepsis_notes": "Sepsis notes",
   };
   for (const f of TIMING_FIELDS) m[`timings.${f.key}`] = `${f.label} (${f.unit})`;
-  for (const f of STANDING_ORDER_FIELDS) m[`standing_orders.${f.key}`] = f.label;
+  for (const g of STANDING_ORDER_GROUPS) {
+    for (const o of g.orders) {
+      // Path matches the flattener: standing_orders.<pathway>.<order>.mode
+      m[`standing_orders.${g.key}.${o.key}.mode`] = `${g.label} · ${o.label}`;
+    }
+  }
   for (const f of TERMINOLOGY_FIELDS) m[`terminology.${f.key}`] = f.label;
   for (const e of SCENARIO_ENGINES) {
     m[`scenario_overrides.${e.key}.variant`] = `${e.label} · variant`;
