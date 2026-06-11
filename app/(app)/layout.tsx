@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { CustomerSwitcher } from "@/components/customer-switcher";
 import { Wordmark } from "@/components/wordmark";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerContext } from "@/lib/customerContext";
@@ -27,16 +28,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Admin nav entry is visible only to customer admins. getCustomerContext is
   // defensive: a missing customer_users table just yields a non-admin context.
+  // Role + customerId reflect the *active* membership (Sprint 6.1) — a multi-
+  // membership user (e.g. the platform owner) sees the admin nav iff their
+  // currently-selected workspace makes them admin there.
   const ctx = await getCustomerContext();
   let nav: NavItem[] = NAV;
   if (ctx.status === "ok" && ctx.role === "admin") {
-    const pending = await countPendingProposals(ctx.customerId);
+    const pending = await countPendingProposals(ctx.activeCustomerId);
     nav = [
       ...NAV,
       { href: "/dashboard/admin/config", label: "Admin" },
       { href: "/dashboard/admin/reviews", label: "Reviews", badge: pending },
     ];
   }
+
+  // The customer switcher is rendered only for users with >1 membership; a
+  // single-membership user (Diane, Robin) gets no visible change vs. pre-6.1.
+  const showSwitcher = ctx.status === "ok" && ctx.memberships.length > 1;
 
   const fullName =
     (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";
@@ -66,6 +74,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             ))}
           </nav>
           <div className="flex items-center gap-3">
+            {showSwitcher && ctx.status === "ok" && (
+              <CustomerSwitcher
+                memberships={ctx.memberships}
+                activeCustomerId={ctx.activeCustomerId}
+              />
+            )}
             <span className="hidden font-mono text-[11px] uppercase tracking-label text-ink-3 sm:inline">
               {fullName}
             </span>
