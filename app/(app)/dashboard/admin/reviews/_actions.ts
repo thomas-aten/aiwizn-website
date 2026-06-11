@@ -82,7 +82,7 @@ export async function approveProposal(
   }
 
   const supabase = createClient();
-  const proposal = await loadPending(supabase, proposalId, ctx.customerId);
+  const proposal = await loadPending(supabase, proposalId, ctx.activeCustomerId);
   if ("error" in proposal) {
     return { status: "error", errors: [proposal.error] };
   }
@@ -91,7 +91,7 @@ export async function approveProposal(
   const { data: existingRow, error: readErr } = await supabase
     .from("protocol_configs")
     .select("config_json, version")
-    .eq("customer_id", ctx.customerId)
+    .eq("customer_id", ctx.activeCustomerId)
     .eq("engine_slug", CANONICAL_SLUG)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -127,7 +127,7 @@ export async function approveProposal(
   const { data: cfgRow, error: cfgErr } = await supabase
     .from("protocol_configs")
     .insert({
-      customer_id: ctx.customerId,
+      customer_id: ctx.activeCustomerId,
       engine_slug: CANONICAL_SLUG,
       config_json: validated.config,
       version: nextVersion,
@@ -168,7 +168,7 @@ export async function approveProposal(
   }
 
   await writeAuditEvent({
-    customerId: ctx.customerId,
+    customerId: ctx.activeCustomerId,
     userId: ctx.userId,
     eventType: "protocol_config.published",
     resourceType: "protocol_configs",
@@ -181,7 +181,7 @@ export async function approveProposal(
     },
   });
   await writeAuditEvent({
-    customerId: ctx.customerId,
+    customerId: ctx.activeCustomerId,
     userId: ctx.userId,
     eventType: "protocol_config.override_approved",
     resourceType: "clinical_override_proposals",
@@ -218,7 +218,7 @@ export async function rejectProposal(
   }
 
   const supabase = createClient();
-  const proposal = await loadPending(supabase, proposalId, ctx.customerId);
+  const proposal = await loadPending(supabase, proposalId, ctx.activeCustomerId);
   if ("error" in proposal) {
     return { status: "error", errors: [proposal.error] };
   }
@@ -238,7 +238,7 @@ export async function rejectProposal(
   }
 
   await writeAuditEvent({
-    customerId: ctx.customerId,
+    customerId: ctx.activeCustomerId,
     userId: ctx.userId,
     eventType: "protocol_config.override_rejected",
     resourceType: "clinical_override_proposals",

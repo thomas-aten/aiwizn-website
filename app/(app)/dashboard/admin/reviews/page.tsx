@@ -73,7 +73,7 @@ export default async function AdminReviewsPage() {
     );
   }
 
-  const proposals = await listPendingProposals(ctx.customerId);
+  const proposals = await listPendingProposals(ctx.activeCustomerId);
   const proposers = await resolveProposers(proposals.map((p) => p.proposed_by));
 
   const items: ReviewItem[] = proposals.map((p) => ({

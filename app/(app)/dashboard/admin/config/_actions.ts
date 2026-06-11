@@ -97,7 +97,7 @@ async function insertConfigVersion(
   const { data, error } = await supabase
     .from("protocol_configs")
     .insert({
-      customer_id: ctx.customerId,
+      customer_id: ctx.activeCustomerId,
       engine_slug: CANONICAL_SLUG,
       config_json: config,
       version,
@@ -141,14 +141,14 @@ export async function publishConfig(
   const next: ProtocolConfigV11 = validated.config;
 
   const supabase = createClient();
-  const prevVersion = await currentVersion(supabase, ctx.customerId);
+  const prevVersion = await currentVersion(supabase, ctx.activeCustomerId);
   const nextVersion = prevVersion + 1;
 
   // Resolve the currently-published config to diff against.
   const { data: existingRow } = await supabase
     .from("protocol_configs")
     .select("config_json")
-    .eq("customer_id", ctx.customerId)
+    .eq("customer_id", ctx.activeCustomerId)
     .eq("engine_slug", CANONICAL_SLUG)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -172,7 +172,7 @@ export async function publishConfig(
   }
 
   await writeAuditEvent({
-    customerId: ctx.customerId,
+    customerId: ctx.activeCustomerId,
     userId: ctx.userId,
     eventType: "protocol_config.published",
     resourceType: "protocol_configs",
@@ -234,7 +234,7 @@ async function stageClinicalOverride(
     }
     publishedVersion = nextVersion;
     await writeAuditEvent({
-      customerId: ctx.customerId,
+      customerId: ctx.activeCustomerId,
       userId: ctx.userId,
       eventType: "protocol_config.published",
       resourceType: "protocol_configs",
@@ -252,7 +252,7 @@ async function stageClinicalOverride(
   const { data: proposal, error: propErr } = await supabase
     .from("clinical_override_proposals")
     .insert({
-      customer_id: ctx.customerId,
+      customer_id: ctx.activeCustomerId,
       engine_slug: CANONICAL_SLUG,
       proposed_clinical_overrides: next.clinical_overrides,
       proposed_by: ctx.userId,
@@ -275,7 +275,7 @@ async function stageClinicalOverride(
   const proposalId = proposal.id as string;
 
   await writeAuditEvent({
-    customerId: ctx.customerId,
+    customerId: ctx.activeCustomerId,
     userId: ctx.userId,
     eventType: "protocol_config.override_proposed",
     resourceType: "clinical_override_proposals",

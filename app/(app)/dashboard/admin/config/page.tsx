@@ -66,7 +66,10 @@ export default async function AdminConfigPage() {
   }
 
   const supabase = createClient();
-  const { config, version } = await loadCurrentConfig(supabase, ctx.customerId);
+  const { config, version } = await loadCurrentConfig(
+    supabase,
+    ctx.activeCustomerId,
+  );
 
   return (
     <div className="mx-auto max-w-4xl">
