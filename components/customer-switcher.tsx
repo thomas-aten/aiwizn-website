@@ -13,9 +13,12 @@ type Props = {
 /**
  * Header dropdown that lets a multi-membership user switch which customer
  * workspace they're currently acting in. The active selection is persisted
- * server-side as a httpOnly cookie via {@link setActiveCustomer} and the page
- * is refreshed so the new context (nav, admin gates, config) is reflected
- * everywhere on the next render.
+ * server-side as a httpOnly cookie via {@link setActiveCustomer}; we then
+ * force a full reload so every server-rendered surface (layout nav, admin
+ * gates, /admin/config form bound to the active tenant's protocol_configs)
+ * picks up the new cookie context. `router.refresh()` alone was insufficient
+ * — the React Server Components cache held the prior context until a hard
+ * reload landed (Sprint 7.2 fix: switcher only worked on Ctrl+R).
  *
  * The parent layout decides whether to render this at all — a single-
  * membership user (Diane, Robin) never sees the switcher and their existing
@@ -36,7 +39,12 @@ export function CustomerSwitcher({ memberships, activeCustomerId }: Props) {
         setError(res.error);
         return;
       }
-      router.refresh();
+      // Hard reload: revalidatePath + router.refresh() leave the RSC cache
+      // partially stale on this flow; window.location.reload() guarantees
+      // the next request reads the just-written cookie and re-renders every
+      // server surface with the new active customer.
+      if (typeof window !== "undefined") window.location.reload();
+      else router.refresh();
     });
   }
 

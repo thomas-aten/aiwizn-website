@@ -6,6 +6,17 @@ The clinical engine and Care Support engine track their own versions in `aiwizn-
 
 ---
 
+## [0.5.0] — 2026-06-12 (Sprint 7.2)
+
+Make the multi-tenant switcher feel real on the dashboard root by surfacing the active workspace identity. Switching workspaces in the header dropdown now visibly transforms `/dashboard` — same surface, different hospital identity.
+
+- **Workspace identity banner** at the top of `/dashboard` — shows the active customer's hospital display name, legal customer name, slug, and the user's role. The customer's configured `branding.accent_color` is rendered as a vertical side-bar so the brand cue is felt, not just clicked through.
+- **Config-at-a-glance card** — 5-cell grid pulled from the active customer's most-recent `protocol_configs` row via `migrateToV11`: door-to-balloon (PCI), door-to-needle (Stroke), sepsis bundle (hours), interpreter service, and attending naming. Numeric cells carry a one-line published-guideline footnote (AHA gold standard ≤90, AHA/ASA target ≤45, SSC 1-hr or 3-hr) so the operator sees their site's number against the canonical anchor.
+- **Quick links row** for admins — direct, customer-scoped jumps to `/dashboard/admin/config`, `/dashboard/admin/reviews` (with a live pending-proposal count from `countPendingProposals`), and `/dashboard/engines/clinical`.
+- **Non-admin "How to use this workspace" tile** — shown instead of the quick-links row to learners / educators / CNOs, framing the engines below as tuned to the visible config.
+- `app/(app)/dashboard/page.tsx` — the generic "Welcome, {firstName}" hero is now replaced with the identity-bound surface above when `getCustomerContext().status === "ok"`. The Flywheel and Agents sections below are unchanged. Anonymous / unassigned users still see the original welcome as a visual backstop.
+- Carries forward the Sprint 7.2 switcher fix in `components/customer-switcher.tsx`: `window.location.reload()` is used after `setActiveCustomer` so the RSC cache picks up the new active-customer cookie. `router.refresh()` alone left the prior context cached on this flow.
+
 ## [0.4.0] — 2026-06-11 (Sprint 7)
 
 Two independent landings shipped together; each chunk lives on its own commit group so it can be reverted in isolation.
