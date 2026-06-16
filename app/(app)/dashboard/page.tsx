@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, STAGES } from "@/lib/agents";
 import { hasActiveEnginesSubscription } from "@/lib/entitlement";
-import { ACTIVE_TIER, PLANS } from "@/lib/pricing";
 import { getCustomerContext } from "@/lib/customerContext";
 import {
   migrateToV11,
@@ -263,15 +262,15 @@ export default async function DashboardPage() {
                 ● No active subscription
               </p>
               <h2 className="mt-3 font-display text-2xl leading-tight text-ink md:text-3xl">
-                Unlock both engines for {PLANS.individual.prices[ACTIVE_TIER].display} / yr.
+                Unlock both engines.
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-ink-2">
                 Annual subscription · Clinical Engine + JC 2026 Engine ·
                 Cancel anytime.
               </p>
             </div>
-            <Link href="/pricing" className="btn-primary">
-              See pricing
+            <Link href="/contact" className="btn-primary">
+              Contact us
             </Link>
           </div>
         </div>

@@ -1,5 +1,13 @@
 // Single source of truth for the AIWIZN engines paywall.
-// Switch the early-bird vs regular tier here when ready.
+//
+// NOTE: Public-facing dollar amounts and per-seat cadence labels have
+// been removed from the marketing pages — the live site routes pricing
+// inquiries to /contact via "Request Pricing" CTAs. The `amount` /
+// `display` / `cadence` values are retained here only because the
+// Stripe checkout route (`/api/stripe/checkout`) and `lib/stripe.ts`
+// still reference the `envKey` map for Stripe price IDs. If/when
+// pricing comes back to the site, surface these values again — but the
+// SOURCE OF TRUTH for what a customer pays is the Stripe dashboard.
 //
 // To flip from early-bird to regular pricing, change the env var
 // NEXT_PUBLIC_PRICING_TIER from "early_bird" to "regular" in Vercel

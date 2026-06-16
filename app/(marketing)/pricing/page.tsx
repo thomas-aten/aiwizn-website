@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
-import {
-  ACTIVE_TIER,
-  ENGINES_INCLUDED,
-  PLANS,
-} from "@/lib/pricing";
-import { SubscribeButton } from "@/components/pricing/subscribe-button";
-import { InstitutionalCard } from "@/components/pricing/institutional-card";
+import Link from "next/link";
+import { ENGINES_INCLUDED, PLANS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Get full access to the AIWIZN Clinical Engine and JC 2026 Engine — annual subscription, individual or institutional seat licenses.",
+    "Get full access to the AIWIZN Clinical Engine and JC 2026 Engine — annual subscription, individual or institutional seat licenses. Request pricing tailored to your team.",
 };
 
 export default function PricingPage() {
-  const isEarlyBird = ACTIVE_TIER === "early_bird";
-  const individual = PLANS.individual.prices[ACTIVE_TIER];
-  const individualRegular = PLANS.individual.prices.regular;
-
   return (
     <>
       <section>
@@ -31,6 +22,17 @@ export default function PricingPage() {
             stealth assessment, and Joint Commission 2026 readiness — backed by
             21 years of evidence-anchored simulation work.
           </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/contact" className="btn-primary">
+              Request Pricing
+            </Link>
+            <a
+              href="mailto:Thomas@ateninc.com?subject=AIWIZN%20%E2%80%94%20Request%20Pricing"
+              className="btn-secondary"
+            >
+              Email Thomas@ateninc.com
+            </a>
+          </div>
         </div>
       </section>
 
@@ -75,47 +77,74 @@ export default function PricingPage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             <aside className="card relative overflow-hidden border-teal/30 bg-gradient-to-br from-white via-white to-teal/5 p-8 md:p-10">
-              {isEarlyBird && (
-                <span className="absolute right-6 top-6 rounded-full bg-orange/10 px-3 py-1 font-mono text-[10px] uppercase tracking-label text-orange">
-                  Early bird
-                </span>
-              )}
               <p className="label">{PLANS.individual.name}</p>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-ink-2">
                 {PLANS.individual.audience}
               </p>
-              <p className="mt-5 flex items-baseline gap-2">
-                <span className="font-display text-5xl text-ink">
-                  {individual.display}
-                </span>
-                <span className="font-mono text-xs uppercase tracking-label text-ink-3">
-                  / {individual.cadence}
-                </span>
+              <p className="mt-5 font-display text-4xl text-ink">
+                Request Pricing
               </p>
-              {isEarlyBird && (
-                <p className="mt-2 font-mono text-[11px] uppercase tracking-label text-ink-3">
-                  Standard rate {individualRegular.display} /{" "}
-                  {individualRegular.cadence}
-                </p>
-              )}
               <p className="mt-4 text-sm leading-relaxed text-ink-2">
-                {individual.note}
+                Annual subscription. Cancel anytime. Tailored pricing for
+                clinicians, faculty, and self-paced learners — talk to us
+                about what fits your situation.
               </p>
 
-              <SubscribeButton
-                plan="individual"
-                tier={ACTIVE_TIER}
-                className="mt-6 w-full"
-              />
-              <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-label text-ink-3">
-                Secure checkout · Powered by Stripe
-              </p>
-              <p className="mt-2 text-center text-xs text-ink-3">
-                You&apos;ll be asked to sign in or create an AIWIZN account first.
+              <Link
+                href="/contact"
+                className="btn-primary mt-6 inline-flex w-full justify-center"
+              >
+                Contact us
+              </Link>
+              <p className="mt-4 text-center text-xs text-ink-3">
+                Email{" "}
+                <a
+                  className="hover:text-ink"
+                  href="mailto:Thomas@ateninc.com?subject=AIWIZN%20%E2%80%94%20Individual%20Pricing"
+                >
+                  Thomas@ateninc.com
+                </a>{" "}
+                or use the contact form.
               </p>
             </aside>
 
-            <InstitutionalCard />
+            <aside className="card relative overflow-hidden border-gold/30 bg-gradient-to-br from-white via-white to-gold/5 p-8 md:p-10">
+              <p className="label">{PLANS.institutional.name}</p>
+              <p className="mt-2 max-w-prose text-sm leading-relaxed text-ink-2">
+                For hospitals, health systems, and nursing schools. Volume
+                pricing and invoiced billing available.
+              </p>
+              <p className="mt-5 font-display text-4xl text-ink">
+                Request Pricing
+              </p>
+              <p className="mt-4 text-sm leading-relaxed text-ink-2">
+                Annual seat licenses for hospitals and schools. Pricing scales
+                with cohort size — get a quote tailored to your team.
+              </p>
+
+              <ul className="mt-5 space-y-2 text-sm text-ink-2">
+                <li>• Volume pricing for any cohort size</li>
+                <li>• Invoiced billing &amp; multi-year terms available</li>
+                <li>• Dedicated onboarding &amp; clinical advisory support</li>
+              </ul>
+
+              <Link
+                href="/contact"
+                className="btn-primary mt-6 inline-flex w-full justify-center"
+              >
+                Contact us
+              </Link>
+              <p className="mt-4 text-center text-xs text-ink-3">
+                Email{" "}
+                <a
+                  className="hover:text-ink"
+                  href="mailto:Thomas@ateninc.com?subject=AIWIZN%20%E2%80%94%20Institutional%20Pricing"
+                >
+                  Thomas@ateninc.com
+                </a>{" "}
+                with your cohort size for a quote.
+              </p>
+            </aside>
           </div>
         </div>
       </section>
@@ -124,16 +153,16 @@ export default function PricingPage() {
         <div className="container pb-24">
           <div className="grid gap-6 md:grid-cols-3">
             <Faq
-              q="Can I cancel anytime?"
-              a="Yes. Cancel from the customer portal — your access continues to the end of the paid period."
+              q="How do I get pricing?"
+              a="Reach out via the contact form or email Thomas@ateninc.com. We'll send pricing tailored to your situation — individual, school cohort, or hospital seat license."
             />
             <Faq
               q="How does institutional billing work?"
-              a={`Hospitals and schools pay $${PLANS.institutional.prices.early_bird.amount} per nurse per year (early bird) or $${PLANS.institutional.prices.regular.amount} standard. Self-serve checkout supports up to 100 nurses. For 100+ nurses, email Thomas@ateninc.com for volume pricing and invoiced billing.`}
+              a="Hospitals and schools are quoted on a per-nurse annual license basis with volume discounts. Invoiced billing and multi-year terms are available. Contact us for a quote."
             />
             <Faq
-              q="Will the price increase?"
-              a="Early-bird rates are locked in at renewal for both individual and institutional subscribers who sign up during the launch window."
+              q="Can I cancel anytime?"
+              a="Yes. Annual subscriptions can be cancelled from the customer portal — access continues to the end of the paid period."
             />
           </div>
         </div>
