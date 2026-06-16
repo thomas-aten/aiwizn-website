@@ -5,6 +5,7 @@ import { Hero } from "@/components/sections/hero";
 import { Lineage } from "@/components/sections/lineage";
 import { Problem } from "@/components/sections/problem";
 import { Team } from "@/components/sections/team";
+import { Testimonials } from "@/components/sections/testimonials";
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
       <Flywheel />
       <AgentsGrid />
       <Lineage />
+      <Testimonials />
       <Team />
       <CTA />
     </>
