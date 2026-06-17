@@ -75,12 +75,10 @@ export default function InvestorBriefPage() {
                 Request the data room
               </a>
               <a
-                href="https://thomas-aten.github.io/aiwizn-investor-brief/"
+                href="mailto:Thomas@ateninc.com?subject=AIWIZN%20%E2%80%94%20Long-form%20investor%20brief"
                 className="btn-secondary"
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                Read the long-form brief →
+                Request the long-form brief →
               </a>
             </div>
             <p className="mt-8 font-mono text-[11px] uppercase tracking-label text-ink-3">

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /private/
+Disallow: /demo
 Disallow: /dashboard
 Disallow: /login
 Disallow: /signup
