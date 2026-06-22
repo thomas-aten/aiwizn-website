@@ -34,3 +34,14 @@ coverage
 # typescript
 next-env.d.ts
 *.tsbuildinfo
+
+# marketing materials — generated DOCX/PPTX/PDF deliverables.
+# Lives in iCloud as the canonical store; sync via marketing/wakemed/sync_to_icloud.sh.
+# Keep the sync script tracked, ignore everything else under marketing/.
+marketing/**/*.docx
+marketing/**/*.pptx
+marketing/**/*.pdf
+marketing/**/sources/
+
+# scratch — verification scripts spawned by code tasks, safe to ignore
+print_*.cjs
