@@ -150,18 +150,21 @@ export const DUKE_CLINICAL_ENGINE_LINK = buildClinicalEngineLink(
  * Health Network's official brand color) and "Allegheny Health Network"
  * display name. Slug "ahn".
  *
- * Terminology: defaults for now — no AHN-specific overrides yet. Paul can
- * refine interpreter-service / code naming after the first conversation.
+ * Modelled on the Allegheny General Hospital (AGH) flagship profile:
+ *   - PCI-receiving center → D2B ≤75 min (vs AHA gold-standard 90)
+ *   - Comprehensive Stroke Center → D2N ≤45 min (vs ASA target 60), D2CT 20, D2device 90
+ *   - SEP-1 1-hr bundle (vs the 3-hr default), reflecting AGH's published
+ *     sepsis bundle performance
+ * These are tighter than the AHA/ASA generic defaults; flagged for AHN
+ * clinical lead review before any live cohort use.
  *
- * Scenarios: the default clinical-engine scenario set already covers the
- * high-acuity trio (sepsis recognition, acute MI/STEMI activation, stroke
- * tPA decision). NOTE — "trauma" is a Paul-requested follow-up overlay for a
- * future sprint; no code change here because the live engine does not yet
- * ship a trauma scenario module. Flagged so we don't forget to wire it in
- * once that module lands.
+ * Scenarios: the default clinical-engine scenario set covers the high-acuity
+ * trio (sepsis recognition, acute MI/STEMI activation, stroke tPA decision).
+ * NOTE — "trauma" is positioning language for AGH's Level I trauma status,
+ * NOT a selectable scenario in the engine yet. A trauma scenario module is
+ * flagged for a future sprint.
  *
- * Timing targets default to AHA/SEP-1 published gold standards — AHN has not
- * yet ratified institution-specific protocol-timing deltas.
+ * Terminology: AHN-specific names where confirmed; defaults otherwise.
  *
  * Additive: WakeMed, UNC, and Duke payloads untouched. Same hash mechanism
  * as the other tenants — no new persistence layer, no new auth path.
@@ -176,6 +179,18 @@ export function alleghenyHealthNetworkConfig(): ProtocolConfigV11 {
       accent_color: "#002F6C",
       hospital_name_display: "Allegheny Health Network",
       attending_naming: "attending",
+    },
+    // AGH flagship timing profile: PCI-receive + Comprehensive Stroke Center
+    timings: {
+      ...base.timings,
+      stemi_door_to_balloon_min: 75, // PCI-receive flagship (vs 90 default)
+      stroke_door_to_needle_min: 45, // Comprehensive Stroke Center (vs 60 default)
+      stroke_door_to_ct_min: 20,     // Comprehensive Stroke Center (vs 25 default)
+      sepsis_bundle_hr: 1,           // SEP-1 1-hr bundle (vs 3 default)
+    },
+    terminology: {
+      ...base.terminology,
+      interpreter_service: "AHN Language Services",
     },
   };
 }
