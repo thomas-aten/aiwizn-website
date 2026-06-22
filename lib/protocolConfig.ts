@@ -23,6 +23,31 @@ export const SCHEMA_VERSION = "1.1" as const;
 
 export type AttendingNaming = "attending" | "consultant" | "physician";
 
+/**
+ * Customer identity — the SHARED key path the engine reads to surface the
+ * tenant tag (`m-tenant-banner` in `index.html`), pre-fill the `m-org` field,
+ * and capture `S.tenantSlug` / `S.tenantName` into Supabase rows.
+ *
+ * The engine (`aiwizn-clinical-engine/index.html`) calls
+ * `_aiwiznTenantDisplayName(cfg) = cfg.customer.name || humanize(cfg.customer.slug)`
+ * — if this top-level `customer` object is absent, the engine falls back to
+ * the default "AIWIZN Demo Hospital" tag even when `branding.customer_name`
+ * is set. Added 2026-06-21 to fix the per-tenant short-link bug where
+ * /allegheny / /unc / /duke were showing the default tag.
+ */
+export interface CustomerConfig {
+  /** Customer legal / display name as it should appear in the engine UI. */
+  name: string;
+  /** Tenant slug — matches branding.slug. Engine humanizes this if name absent. */
+  slug: string;
+  /**
+   * Email domains we treat as "belongs to this tenant" for the engine's
+   * cohort-link auto-routing. Empty array = no domain routing. The engine
+   * reads this in `_aiwiznTenantFromEmail()` (Sprint 12).
+   */
+  email_domains: string[];
+}
+
 export interface BrandingConfig {
   /** Customer / org legal name. */
   customer_name: string;
@@ -171,6 +196,13 @@ export interface ClinicalOverridesConfig {
 
 export interface ProtocolConfigV11 {
   schema_version: typeof SCHEMA_VERSION;
+  /**
+   * Customer identity at the top level — the engine reads `cfg.customer.name`
+   * to set the tenant tag and pre-fill the org field. Added 2026-06-21 to
+   * match the engine's `defaultConfig.json` shape; without this, per-tenant
+   * short links (e.g. /allegheny) fell back to the default tag.
+   */
+  customer: CustomerConfig;
   branding: BrandingConfig;
   timings: TimingsConfig;
   standing_orders: StandingOrdersConfig;
@@ -554,6 +586,15 @@ export function defaultProtocolConfig(
 ): ProtocolConfigV11 {
   return {
     schema_version: SCHEMA_VERSION,
+    // Top-level customer block — engine reads this to set the tenant tag
+    // (`_aiwiznTenantDisplayName` in `aiwizn-clinical-engine/index.html`).
+    // MUST be present for per-tenant short links to surface tenant branding;
+    // without it the engine falls back to "AIWIZN Demo Hospital".
+    customer: {
+      name: customerName,
+      slug,
+      email_domains: [],
+    },
     branding: {
       customer_name: customerName,
       slug,
@@ -920,8 +961,21 @@ export function migrateToV11(
     ? Math.round(sepsisLegacyMin / 60)
     : NaN;
 
+  // Top-level customer block — required by the engine's tenant tag.
+  const cust = isRecord((raw as Record<string, unknown>).customer)
+    ? ((raw as Record<string, unknown>).customer as Record<string, unknown>)
+    : {};
+  const emailDomains = Array.isArray(cust.email_domains)
+    ? (cust.email_domains as unknown[]).filter((d): d is string => typeof d === "string")
+    : base.customer.email_domains;
+
   return {
     schema_version: SCHEMA_VERSION,
+    customer: {
+      name: customerName || str(cust.name, base.customer.name),
+      slug: slug || str(cust.slug, base.customer.slug),
+      email_domains: emailDomains,
+    },
     branding: {
       // slug/customer_name from the trusted caller take precedence over the blob.
       customer_name: customerName || str(b.customer_name, base.branding.customer_name),
