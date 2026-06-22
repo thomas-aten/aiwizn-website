@@ -107,6 +107,83 @@ export const UNC_CLINICAL_ENGINE_LINK = buildClinicalEngineLink(
   uncMedicalCenterConfig(),
 );
 
+/**
+ * Duke University Health System — added 2026-06-17 after Lynn Kenyon
+ * (Duke ICU CCRN) ran the cardiac-stroke-sepsis set as the first external
+ * clinical leader to clear it. Duke Blue accent #012169 (official Duke
+ * brand color), "Duke University Health System" display name, and
+ * "Duke Language Services" interpreter-service terminology.
+ *
+ * Timing targets default to AHA/SEP-1 published gold standards — Duke has
+ * not yet ratified institution-specific protocol-timing deltas. Flagged
+ * to revisit with Lynn for any Duke-specific D2B / D2N / sepsis-bundle
+ * targets we should bake in.
+ *
+ * Additive: WakeMed and UNC payloads untouched. Same hash mechanism as
+ * the other tenants — no new persistence layer, no new auth path.
+ */
+export function dukeUniversityConfig(): ProtocolConfigV11 {
+  const base = defaultProtocolConfig("duke", "Duke University Health System");
+  return {
+    ...base,
+    branding: {
+      ...base.branding,
+      // Duke Blue — the official Duke University brand color.
+      accent_color: "#012169",
+      hospital_name_display: "Duke University Health System",
+      attending_naming: "attending",
+    },
+    terminology: {
+      ...base.terminology,
+      interpreter_service: "Duke Language Services",
+    },
+  };
+}
+
+export const DUKE_CLINICAL_ENGINE_LINK = buildClinicalEngineLink(
+  dukeUniversityConfig(),
+);
+
+/**
+ * Allegheny Health Network — added 2026-06-21 as a channel-partner intro
+ * (Paul Palamara, Pinnacle Mx Group). AHN navy accent #002F6C (Allegheny
+ * Health Network's official brand color) and "Allegheny Health Network"
+ * display name. Slug "ahn".
+ *
+ * Terminology: defaults for now — no AHN-specific overrides yet. Paul can
+ * refine interpreter-service / code naming after the first conversation.
+ *
+ * Scenarios: the default clinical-engine scenario set already covers the
+ * high-acuity trio (sepsis recognition, acute MI/STEMI activation, stroke
+ * tPA decision). NOTE — "trauma" is a Paul-requested follow-up overlay for a
+ * future sprint; no code change here because the live engine does not yet
+ * ship a trauma scenario module. Flagged so we don't forget to wire it in
+ * once that module lands.
+ *
+ * Timing targets default to AHA/SEP-1 published gold standards — AHN has not
+ * yet ratified institution-specific protocol-timing deltas.
+ *
+ * Additive: WakeMed, UNC, and Duke payloads untouched. Same hash mechanism
+ * as the other tenants — no new persistence layer, no new auth path.
+ */
+export function alleghenyHealthNetworkConfig(): ProtocolConfigV11 {
+  const base = defaultProtocolConfig("ahn", "Allegheny Health Network");
+  return {
+    ...base,
+    branding: {
+      ...base.branding,
+      // AHN navy — Allegheny Health Network's official brand color.
+      accent_color: "#002F6C",
+      hospital_name_display: "Allegheny Health Network",
+      attending_naming: "attending",
+    },
+  };
+}
+
+export const ALLEGHENY_CLINICAL_ENGINE_LINK = buildClinicalEngineLink(
+  alleghenyHealthNetworkConfig(),
+);
+
 /** The walk-up Demo Hospital link (anonymous explore). */
 export const DEMO_HOSPITAL_CLINICAL_ENGINE_LINK = buildClinicalEngineLink(
   demoHospitalConfig(),

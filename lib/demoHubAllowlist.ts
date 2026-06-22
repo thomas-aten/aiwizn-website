@@ -48,6 +48,7 @@ const ALLOWED_DOMAINS = ["ateninc.com"] as const;
  *   - Lynn Kenyon (Duke)                — completed session via WakeMed link
  *   - Diane Rhyne (UNC / Care Support)  — clinical advisor
  *   - Robin Jacob (UNC clinical lead)   — clinical advisor
+ *   - Paul Palamara (Pinnacle Mx Group) — sales channel partner
  */
 const INVITE_EMAILS: readonly string[] = [
   "graham@wakemed.org",
@@ -55,6 +56,7 @@ const INVITE_EMAILS: readonly string[] = [
   "lynn.kenyon@duke.edu",
   "diane.rhyne@unchealth.unc.edu",
   "robin.jacob@unchealth.unc.edu",
+  "palamara@pinnaclemx.com",  // Paul Palamara · Pinnacle Mx Group · sales channel partner · added 2026-06-21
 ];
 
 const INVITE_SET = new Set(INVITE_EMAILS.map((e) => e.toLowerCase()));
