@@ -24,7 +24,7 @@ const TESTIMONIALS: Testimonial[] = [
     location: "Greater Melbourne, Australia",
   },
   {
-    quote: "I loved this simulation. This is how I would love to learn!",
+    quote: "Amazing — I loved this simulation. This is how I would love to learn!",
     name: "Lynn Kenyon",
     credentials: "BSN, RN",
     role: "Immunization Nurse",

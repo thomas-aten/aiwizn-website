@@ -8,7 +8,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const ENGINE_URL = "https://thomas-aten.github.io/aiwizn-clinical-engine/";
+// Sprint 15 — consolidated onto demo.aiwizn.com (the same origin used by the
+// generic [slug] route and the external-tester per-tenant links). The legacy
+// static-pages mirror has been retired site-wide.
+const ENGINE_URL = "https://demo.aiwizn.com/";
 
 export default async function ClinicalEnginePage() {
   const entitled = await hasActiveEnginesSubscription();
