@@ -47,8 +47,27 @@ type EngineCard = {
   href?: string;
 };
 
+// AI Readiness Engine (ARI) ships at demo.aiwizn.com/ai-readiness/ but is NOT
+// surfaced in the public catalogue yet — per the Demo Map open decision, default
+// is unlisted until Thomas + Arvind decide. Flip this flag to true to reveal the
+// card once that call is made. (Build: AI Readiness Engine v1, Phase 1.)
+const SHOW_AI_READINESS = false;
+
 function buildCards(): EngineCard[] {
   return [
+    ...(SHOW_AI_READINESS
+      ? [
+          {
+            id: "ai-readiness",
+            status: "live" as const,
+            title: "AI Readiness Engine (ARI)",
+            blurb:
+              "Scenario-based assessment of how staff reason about AI at the point of care — governance, bias recognition, failure-mode response, disclosure judgment, and escalation discipline. Produces an AI Readiness Index (ARI). Prepares for AI-readiness standards incl. Joint Commission RUAIH; does NOT issue RUAIH certification.",
+            meta: "ARI · 5 domains · RUAIH Readiness",
+            href: "https://demo.aiwizn.com/ai-readiness/",
+          },
+        ]
+      : []),
     {
       id: "nurse-wisdom-index",
       status: "live",
