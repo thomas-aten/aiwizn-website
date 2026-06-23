@@ -1,0 +1,44 @@
+# STAGED PATCH — DO NOT APPLY without explicit go from Thomas + Graham
+# Target: aiwizn-clinical-engine/index.html
+# Purpose: Remove renal SOFA line from S3-A (sepsis-recognition) node,
+#          leaving qSOFA + lactate as the scoring anchors.
+# Why: Per Thomas (2026-06-23), the "UO 18 mL/hr ≈ 432 mL/day → renal SOFA 3"
+#      framing was reclassified as not the right teaching for the recognition
+#      node (the patient is pre-shock; renal SOFA 3 over-anchors organ
+#      dysfunction in a way that conflicts with the qSOFA → bundle pedagogy).
+#      Removing leaves the qSOFA 2/3 + lactate 3.1 as the recognition signals.
+# Trigger: Apply only when (a) Graham confirms the swap in writing,
+#          OR (b) Thomas says pull it before Diane/Robin sees S3-A.
+# Regression: WakeMed engine root curl 200 after apply, plus tester walk-through
+#             of S3-A to confirm SOFA total recomputes from 8 → 5.
+
+--- a/index.html  (line 4795-4799, SOFA table in S3-A teaching card)
++++ b/index.html
+@@ -4795,5 +4795,4 @@
+         <tr><td>Cardiovascular (MAP/Pressors)</td><td class="val-ok">1</td><td>MAP 58, no pressors yet</td></tr>
+         <tr><td>CNS (GCS)</td><td class="val-warn">1</td><td>GCS 13 (altered mentation per qSOFA)</td></tr>
+-        <tr><td>Renal (Creatinine/UO)</td><td class="val-alarm">3</td><td>UO 18 mL/hr ≈ 432 mL/day (&lt;500)</td></tr>
+-        <tr><td><strong>TOTAL</strong></td><td class="val-alarm"><strong>8</strong></td><td><strong>Sepsis confirmed — SOFA ≥2 from baseline + source</strong></td></tr>
++        <tr><td><strong>TOTAL</strong></td><td class="val-alarm"><strong>5</strong></td><td><strong>Sepsis confirmed — qSOFA 2/3 + source identified; renal anchor deferred to S3-C (shock)</strong></td></tr>
+
+--- a/index.html  (line 281, CHANGELOG / internal-codes annotation)
++++ b/index.html
+@@ -281,1 +281,1 @@
+-                • SOFA rescored STRICTLY (Vincent 1996) to the displayed S3-A values: Resp 2 (P/F 240<300), Coag 1 (142K<150), Liver 0 (0.8), CV 1 (MAP 58, no pressors), CNS 1 (GCS 13), Renal 3 (UO 18 mL/h ≈432 mL/d <500) = TOTAL 8. ...
++                • SOFA rescored STRICTLY (Vincent 1996) to the displayed S3-A values: Resp 2 (P/F 240<300), Coag 1 (142K<150), Liver 0 (0.8), CV 1 (MAP 58, no pressors), CNS 1 (GCS 13) = TOTAL 5. Renal SOFA deferred to S3-C (shock node) where anuria + norepi anchor it; recognition node uses qSOFA 2/3 + lactate 3.1 + source identification. ...
+
+--- a/index.html  (line 4570, SVG monitor label)
++++ b/index.html
+@@ -4570,1 +4570,1 @@
+-    <text x="200" y="360" font-family="ui-monospace,monospace" font-size="9.5" fill="#9FC0C8">Lactate 3.1 &#183; UO 18 mL/h (oliguria)</text>
++    <text x="200" y="360" font-family="ui-monospace,monospace" font-size="9.5" fill="#9FC0C8">Lactate 3.1 &#183; UO 18 mL/h (low — see S3-C)</text>
+
+--- a/index.html  (line 4599, environment monitor summary)
++++ b/index.html
+@@ -4599,1 +4599,1 @@
+-    <text x="18" y="96" font-family="ui-monospace,monospace" font-size="10" fill="#33464F">Renal 3 &#183; CV 1 &#183; Hepatic 0</text>
++    <text x="18" y="96" font-family="ui-monospace,monospace" font-size="10" fill="#33464F">CV 1 &#183; Hepatic 0</text>
+
+# Regression curl after apply:
+#   curl -s -o /dev/null -w "WakeMed engine: %{http_code}\n" https://demo.aiwizn.com/
+#   (expect 200; verify in-browser that S3-A renders qSOFA panel without renal line)

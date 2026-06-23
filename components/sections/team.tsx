@@ -65,13 +65,6 @@ const ADVISORS: Person[] = [
     image: "/images/team/erin.png",
     accent: "purple",
   },
-  {
-    name: "Sue Cornacchia",
-    role: "Clinical Advisor · Patient Care Onboarding",
-    bio: "Clinical advisor on the AIWIZN Patient Care Onboarding engine. Brings deep experience in care-support workforce design (CNA / PCT / PCA scope of practice) and bedside-readiness frameworks. Informs the AIWIZN PCO clinical content, competency rubrics, and the terminology and scope-of-practice rules that surface to care-support staff during onboarding.",
-    image: "/images/team/sue.jpeg",
-    accent: "teal",
-  },
 ];
 
 export function Team() {
