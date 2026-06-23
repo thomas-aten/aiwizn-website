@@ -1,12 +1,12 @@
 # AIWIZN — AI Readiness for All
 
-**A platform for the AI-literate organisation — and the AI-literate citizen.**
+**Preparing the AI-literate organisation — and the AI-literate citizen.**
 
 ---
 
-The Joint Commission released RUAIH this year. The EU AI Act takes force in tranches through 2027. SOC and ISO frameworks are adding AI-governance controls. Every regulated industry — and most unregulated ones — is being told the same thing: your workforce needs documented AI awareness, and you need to prove it. Almost nobody has a credible answer.
+The Joint Commission released **RUAIH** this year — an organisation-level certification for healthcare systems on the responsible use of AI. The EU AI Act takes force in tranches through 2027. SOC and ISO frameworks are adding AI-governance controls. Every regulated industry — and most unregulated ones — is being told the same thing: your workforce needs documented AI awareness, and you need to prove it. Almost nobody has a credible answer.
 
-*AIWIZN was built for this. We just need to point it at every audience.*
+*AIWIZN prepares organisations and people for these standards. It does not confer them.*
 
 ---
 
@@ -18,16 +18,16 @@ These aren't different problems. They're the same problem at five different scop
 
 ## What AIWIZN does
 
-AIWIZN is an immersive scenario engine that puts the user inside the decisions where AI bites. Every choice is captured by COGNITA (our stealth-assessment layer), scored against expert judgment, and synthesised into a per-user readiness profile — an **AI Readiness Index (ARI)** — decomposed into seven competency domains. ARIA, our virtual mentor, explains the *why* behind every decision in real time. LUMINA gives leadership the cohort-level view: where the team is strong, where the risk lives, where to intervene first.
+AIWIZN is an immersive scenario engine that puts the user inside the decisions where AI bites. Every choice is captured by COGNITA (our stealth-assessment layer), scored against expert judgment, and synthesised into a per-user readiness profile — an **AI Readiness Index (ARI)** — decomposed into universal competency domains: governance literacy, bias recognition, failure-mode response, disclosure judgment, escalation discipline. ARIA, our virtual mentor, explains the *why* behind every decision in real time. LUMINA gives leadership the cohort-level view: where the team is strong, where the risk lives, where to intervene first.
 
-The exact same architecture that runs WakeMed nurses through STEMI / stroke / sepsis runs a financial-services analyst through model-risk recognition or a layman through deepfake-screening. Industry-specific content packs sit on a vertical-agnostic engine.
+**The scoring spine is vertical-agnostic by design.** The exact same architecture that runs WakeMed nurses through STEMI / stroke / sepsis runs a financial-services analyst through model-risk recognition or a layman through deepfake-screening. Industry-specific content packs sit on a universal engine — validated in the hardest domain (clinical), extended with a domain expert per vertical.
 
 ## The wedge — the AI Readiness Index
 
-- **7** competency domains — bias, hallucination, escalation, disclosure, privacy, governance, recovery
+- **5–7** universal competency domains (governance · bias · failure mode · disclosure · escalation)
 - **15 minutes** per assessment scenario
 - **1** composite ARI score per user
-- **∞** verticals reachable from the same engine
+- **∞** verticals reachable from the same scoring spine
 
 ## The training loop — assessment becomes remediation
 
@@ -37,22 +37,24 @@ The exact same architecture that runs WakeMed nurses through STEMI / stroke / se
 
 3. **Targeted micro-learning** — ARIA serves remediation content keyed to the specific gap pattern. No generic compliance module, just the 8 minutes that close *this* user's weakest domain.
 
-4. **Spaced reinforcement + certification** — CONTINUUM brings the user back at intervals proven to consolidate. At threshold performance, the user earns a verifiable, shareable credential.
+4. **Spaced reinforcement + self-issued recognition** — CONTINUUM brings the user back at intervals proven to consolidate. At threshold performance, the user earns a **self-issued AI Literacy Index score and shareable badge**. Not a certification — a readiness signal.
 
 ## The vertical stack
 
-| Vertical | Application |
-|---|---|
-| **Healthcare** | RUAIH-aligned ARI for clinical staff. Joint Commission credibility. Founding-customer pricing. |
-| **Workforce / Enterprise** | AI literacy for knowledge workers. Per-seat SaaS. Compliance evidence for SOC2 / ISO 42001. |
-| **Legal** | Evidence handling, citation hallucination, privilege under AI assistance. |
-| **Finance** | Model-risk recognition, AI-assisted decisioning, regulatory disclosure. |
-| **Education** | Teacher + student AI literacy, plagiarism-detection literacy, equity in AI-augmented teaching. |
-| **Public / Consumer** | Layperson AI awareness — deepfake screening, scam recognition, personal data hygiene. Freemium with paid certification. |
+Healthcare is validated and live. Other verticals are architecturally ready — the scoring spine and the engine apply; what's needed is a domain expert per vertical to author content packs.
+
+| Vertical | Status | Application |
+|---|---|---|
+| **Healthcare** | **Live · validated** | **AIWIZN RUAIH Readiness** — preparing organisations and staff for Joint Commission RUAIH certification. Named clinical reviewers. Founding-customer pricing. |
+| **Workforce / Enterprise** | Architecturally ready · design-partner sought | AI literacy for knowledge workers — recognising bias, hallucination, disclosure obligations. |
+| **Legal** | Architecturally ready · design-partner sought | Evidence handling, citation hallucination, privilege under AI assistance. |
+| **Finance** | Architecturally ready · design-partner sought | Model-risk recognition, AI-assisted decisioning, regulatory disclosure judgment. |
+| **Education** | Architecturally ready · design-partner sought | Teacher + student AI literacy, plagiarism-detection literacy, equity in AI-augmented teaching. |
+| **Public / Consumer** | Phase-2 go/no-go | AI Literacy Index score + shareable badge for individuals — deepfake screening, scam recognition, personal data hygiene. Self-issued. Not a certification. |
 
 ## Why now
 
-- **Joint Commission RUAIH (2026)** — first major US healthcare AI-governance standard. We are mapped against it.
+- **Joint Commission RUAIH (2026)** — first major US healthcare AI-governance standard. We are mapped against its pillars.
 - **EU AI Act enforcement begins 2026** — workforce literacy is a documented requirement.
 - **Insurance + procurement frameworks** now request AI-governance evidence at vendor onboarding.
 - **Public-sector deepfake fraud doubled** in the last 12 months — citizens need recognition skills.
@@ -66,13 +68,22 @@ Aten Inc. has been building research-grade adaptive simulation since 2001. NBME 
 - **50%** increase in training throughput
 - **29%** productivity improvement
 
+## Honest framing
+
+AIWIZN prepares organisations and individuals for AI-readiness standards. It does not issue Joint Commission RUAIH certification (only Joint Commission can). It does not substitute for SOC, ISO, or EU AI Act compliance attestations. It does provide:
+
+- A defensible, telemetry-backed readiness assessment per user
+- A per-cohort risk view leadership can act on
+- The training infrastructure that closes the gaps the assessment surfaces
+- An evidence base operators can show when standards bodies ask
+
 ---
 
 ## The next step
 
 **Talk to us.**
 
-A 15-minute live walkthrough. Tell us your vertical and we'll preconfigure a branded ARI assessment for your team. Pre-registered, evidence-anchored, shareable certification by the end of the conversation.
+A 15-minute live walkthrough. Tell us your vertical and we'll preconfigure a branded ARI assessment for your team. Healthcare is live today. Other verticals require a domain-expert partner — we'd want to talk to that person too.
 
 **Thomas K Vaidhyan**
 Founder & CEO · AIWIZN / Aten Inc.
