@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CTA } from "@/components/sections/cta";
+import { OfferingMatrix } from "@/components/sections/offering-matrix";
 
 export const metadata: Metadata = {
   title: "For Schools",
@@ -66,6 +67,12 @@ export default function ForSchoolsPage() {
           </div>
         </div>
       </section>
+
+      <OfferingMatrix
+        eyebrow="What ships today"
+        title="Engines your programme can build on."
+        intro="The Clinical Engine and Patient Care Onboarding map cleanly to NCLEX-NGN and CNA scope. AI Readiness gives schools a first-of-its-kind way to teach (and measure) how students reason about AI tools in clinical decision-making."
+      />
 
       <CTA />
     </>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isDemoHubAllowed } from "@/lib/demoHubAllowlist";
 import {
   UNC_CLINICAL_ENGINE_LINK,
+  DUKE_CLINICAL_ENGINE_LINK,
   CARE_SUPPORT_ENGINE_LINK,
   DEMO_HOSPITAL_CLINICAL_ENGINE_LINK,
 } from "@/lib/demoTenantLinks";
@@ -47,11 +48,12 @@ type EngineCard = {
   href?: string;
 };
 
-// AI Readiness Engine (ARI) ships at demo.aiwizn.com/ai-readiness/ but is NOT
-// surfaced in the public catalogue yet — per the Demo Map open decision, default
-// is unlisted until Thomas + Arvind decide. Flip this flag to true to reveal the
-// card once that call is made. (Build: AI Readiness Engine v1, Phase 1.)
-const SHOW_AI_READINESS = false;
+// AI Readiness Engine (ARI) is live at demo.aiwizn.com/ai-readiness/ — flipped
+// ON 2026-06-25 (Thomas, engine-catalog consolidation pass) so the offering
+// × AIWIZN-generic-tenant matrix is complete on the hub. Leave this flag in
+// place; it lets us re-gate the card quickly if AR scenario content needs to
+// be pulled. (AI Readiness v1, Phase 1: 5 RUAIH-aligned scenarios + ARI scoring.)
+const SHOW_AI_READINESS = true;
 
 function buildCards(): EngineCard[] {
   return [
@@ -113,18 +115,20 @@ function buildCards(): EngineCard[] {
       href: UNC_CLINICAL_ENGINE_LINK,
     },
     {
+      id: "duke-university-health",
+      status: "live",
+      title: "Duke University Health System — clinical engine",
+      blurb:
+        "Duke-branded clinical engine for the three high-acuity scenarios. Duke Blue accent, Duke Language Services terminology. Lynn Kenyon's testing surface; published to additional Duke prospects on request.",
+      meta: "Duke · Cardiac · Stroke · Sepsis",
+      href: DUKE_CLINICAL_ENGINE_LINK,
+    },
+    {
       id: "coming-soon-1",
       status: "soon",
       title: "+ Coming soon",
       blurb:
-        "Additional engines in the queue — protocol fluency, medication-administration safety, and the post-orientation longitudinal track.",
-    },
-    {
-      id: "coming-soon-2",
-      status: "soon",
-      title: "+ Coming soon",
-      blurb:
-        "Reserved slot. Tell Thomas which engine you want to see surfaced here next.",
+        "Additional engines in the queue — protocol fluency, medication-administration safety, and the post-orientation longitudinal track. Tell Thomas which one to surface next.",
     },
   ];
 }

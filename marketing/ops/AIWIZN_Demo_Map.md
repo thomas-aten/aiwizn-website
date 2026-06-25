@@ -1,6 +1,6 @@
 # AIWIZN Demo Map — operational reference
 
-**Last updated:** 2026-06-22
+**Last updated:** 2026-06-25
 **Owner:** Thomas K Vaidhyan
 **Purpose:** Single source of truth for every demo URL, what it serves, who it's for, and how it's gated. Updated additively as tenants and offerings land.
 
@@ -28,6 +28,14 @@ The codebase models these as `offeringConfigFor(offering)` × `tenantConfigFor(t
 | `demo.aiwizn.com/duke/` | Duke University Health System | Duke Blue (#012169) · "Duke Language Services" | AHA/SEP-1 defaults | Lynn Kenyon's session captured here · published widely | None — public anonymous | Live |
 | `demo.aiwizn.com/allegheny/` | Allegheny Health Network | AHN Navy (#002F6C) · "AHN Language Services" | **AGH flagship** — D2B 75 / D2N 45 / D2CT 20 / sepsis 1hr | Paul Palamara channel-partner intro · AHN direct prospect only | None — public anonymous | Live · **NOT listed on `/demo` hub** (Paul's direct link only) |
 
+### Other offerings × default (AIWIZN-generic) tenant
+
+| URL | Offering | Index | Status | Audience | Gating | Frozen status |
+|---|---|---|---|---|---|---|
+| `demo.aiwizn.com/cna-onboarding.html` | Patient Care Onboarding | PCRI | **Live · validated** | CNA / PCT / PCA cohort prospects | None — public anonymous | Live |
+| `demo.aiwizn.com/ai-readiness/` | AI Readiness Engine (v1, Phase 1) | ARI | **Live · default tenant** — 5 RUAIH-aligned scenarios (governance · bias · failure-mode · disclosure · escalation), ARI scoring, OFFERING="ai-readiness" stamped on every save | Healthcare-flavored first; vertical-agnostic spine. Surfaces RUAIH "prepare for" framing. | None — public anonymous | Live · Phase 1 |
+| `aiwizn.com/engines/jc2026` (and `aiwizn.com/dashboard/engines/jc2026`) | Joint Commission Readiness | JCRI | **Live · default tenant** | Hospital JC-prep teams | Public route at `/engines/jc2026`; dashboard route is gated | Live |
+
 ### Other engine surfaces
 
 | URL | Purpose | Audience | Gating | Frozen status |
@@ -35,13 +43,6 @@ The codebase models these as `offeringConfigFor(offering)` × `tenantConfigFor(t
 | `demo.aiwizn.com/dashboard.html` | Admin dashboard — session list + drill-down + inline persona render (Sprint 16.1) | Allow-listed admins (thomas@ateninc.com) | Supabase magic-link + `ALLOWED_EMAILS` client allow-list | Live |
 | `demo.aiwizn.com/cohort-invite.html` | Original cohort builder (free-text org, WakeMed default) | Graham/Kelly forwards · WakeMed cohort | None | **FROZEN** — Graham/Kelly forward URLs depend on this exact page. Do NOT change. |
 | `demo.aiwizn.com/duke-cohort-invite.html` | Duke-defaulted cohort builder | Lynn Kenyon · Duke cohort | None | Live · unchanged |
-
-### Coming (planned, not yet live)
-
-| URL | Offering | Tenant | Status |
-|---|---|---|---|
-| `demo.aiwizn.com/ai-readiness/` | AI Readiness (ARI) | Default | **PHASE 1 BUILD** — vertical-agnostic ARI scoring spine + 5 healthcare-flavored scenarios. Hosted on the same engine repo. Pending Thomas's green light to spawn build task. |
-| `demo.aiwizn.com/cna-onboarding.html` | Patient Care Onboarding (PCRI) | Default | Live — separate engine (`cna-onboarding.html` in engine repo) |
 
 ---
 
@@ -57,11 +58,17 @@ The codebase models these as `offeringConfigFor(offering)` × `tenantConfigFor(t
 
 ## /demo hub catalogue rules
 
-The `/demo` page lists tenants for gated browsing. Current rules:
+The `/demo` page lists offerings × tenants for gated browsing. Current rules (post-2026-06-25 consolidation):
 
-- **Listed publicly on `/demo`:** WakeMed (as the engine root), Duke, UNC
-- **NOT listed:** AHN — Paul's direct-link-only, unsigned prospect, not for catalogue exposure
-- **Future:** AI Readiness offering when live — gets its own row, no tenant gate at default
+- **Offering cards listed (every offering × AIWIZN-generic):**
+  - Nurse Wisdom Index (Clinical · Demo Hospital tenant) → `DEMO_HOSPITAL_CLINICAL_ENGINE_LINK`
+  - Patient Care Onboarding Engine → `CARE_SUPPORT_ENGINE_LINK`
+  - AI Readiness Engine (ARI) → `https://demo.aiwizn.com/ai-readiness/` *(flag `SHOW_AI_READINESS=true` in `app/demo/page.tsx`)*
+  - Joint Commission Readiness → `/dashboard/engines/jc2026`
+- **Tenant cards listed:** WakeMed (as the engine root, via the Nurse Wisdom Index card), UNC Medical Center, Duke University Health System
+- **Tenant cards NOT listed:** AHN — Paul's direct-link-only, unsigned prospect, not for catalogue exposure
+- **RUAIH JC build:** placeholder card (status "build") for the JC partnership-tailored RUAIH overlay
+- **Future:** when a new offering ships, add its card; when a new tenant signs, add its card (otherwise stays direct-link)
 
 When a new tenant lands, default = NOT listed until it's a signed conversation. AHN can be promoted to the catalogue when Paul signals readiness.
 
@@ -114,6 +121,24 @@ When a new offering lands (AI Readiness, Joint Commission Readiness, finance ver
 3. **Website repo:** add the offering to the `/demo` catalogue + the cohort builder offering selector
 4. **This Demo Map:** add the row + the planned offering × tenant matrix expansion
 5. **Verify:** existing tenant URLs unchanged + new offering URL loads with correct scenario set
+
+---
+
+## Public website surfacing (aiwizn.com — indexable)
+
+The four offerings are surfaced on three public marketing surfaces via the shared `components/sections/offering-matrix.tsx`:
+
+- `/platform` — full matrix with platform framing ("four engines · one platform spine")
+- `/for-hospitals` — matrix with hospital framing ("what you can deploy to your floor")
+- `/for-schools` — matrix with school framing ("engines your programme can build on")
+
+The matrix surfaces maturity honestly per engine:
+- **Live · validated:** Clinical Engine, Patient Care Onboarding
+- **Live · default tenant:** AI Readiness Engine, Joint Commission Readiness
+
+Every page renders the locked RUAIH disclaimer footer: *"AIWIZN prepares organisations and people for AI-readiness and accreditation standards including Joint Commission RUAIH. AIWIZN does not confer, certify, issue, or substitute for Joint Commission certification — only the Joint Commission can issue RUAIH."*
+
+The matrix does NOT link to any tenant demo URL — those stay gated to `/demo`, `/demo/new`, and per-tenant cohort links.
 
 ---
 

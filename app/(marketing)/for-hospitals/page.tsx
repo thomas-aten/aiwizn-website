@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CTA } from "@/components/sections/cta";
+import { OfferingMatrix } from "@/components/sections/offering-matrix";
 
 export const metadata: Metadata = {
   title: "For Hospitals",
@@ -65,6 +66,12 @@ export default function ForHospitalsPage() {
           </div>
         </div>
       </section>
+
+      <OfferingMatrix
+        eyebrow="What ships today"
+        title="What you can deploy to your floor."
+        intro="The Clinical Engine and Patient Care Onboarding are live with named clinical reviewers. AI Readiness and Joint Commission Readiness run on the default tenant today; we're seeking founding hospital partners to validate them in your environment."
+      />
 
       <CTA />
     </>

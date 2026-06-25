@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AgentsGrid } from "@/components/sections/agents";
 import { Flywheel } from "@/components/sections/flywheel";
+import { OfferingMatrix } from "@/components/sections/offering-matrix";
 
 export const metadata: Metadata = {
   title: "Platform",
@@ -25,6 +26,11 @@ export default function PlatformPage() {
         </div>
       </section>
       <Flywheel />
+      <OfferingMatrix
+        eyebrow="The offerings"
+        title="Four engines · one platform spine."
+        intro="The same multi-agent simulation + stealth-assessment platform powers four scenario libraries today, each producing its own composite index. Healthcare is validated and live; AI Readiness and Joint Commission Readiness ship on the default tenant with design partners sought for next-stage validation."
+      />
       <AgentsGrid />
     </>
   );
