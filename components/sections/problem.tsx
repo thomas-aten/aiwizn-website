@@ -9,40 +9,43 @@ export function Problem() {
 
         <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-14">
           <p className="max-w-prose text-lg leading-relaxed text-ink-2">
-            Inadequate onboarding is cited in 35% of first-year nurse
+            Inadequate onboarding is cited in roughly a third of first-year RN
             departures — yet most hospitals still rely on slide decks,
             shadowing, and annual compliance modules. The nursing workforce
             crisis is not a supply problem.
           </p>
           <p className="max-w-prose text-lg leading-relaxed text-ink-2">
             It is a retention and competency development problem — and no
-            platform has meaningfully addressed it with the rigour the
+            platform has meaningfully addressed it with the rigor the
             profession demands.
           </p>
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 md:grid-cols-2 lg:grid-cols-4">
           <Cell
-            stat="35%"
-            label="First-year RN departures linked to weak orientation"
+            stat="≈ 35%"
+            label="First-year RN departures linked to weak orientation (NSI 2026)"
             tone="teal"
           />
           <Cell
-            stat="$88K"
-            label="Replacement cost per first-year RN turnover"
+            stat="≈ $60K"
+            label="Replacement cost per first-year RN turnover (NSI 2026 — ≈ $60,090)"
             tone="orange"
           />
           <Cell
-            stat="33%"
-            label="First-year RN turnover, national average"
+            stat="> 30%"
+            label="First-year RN turnover, national average (NSI 2026)"
             tone="gold"
           />
           <Cell
-            stat="1:6"
-            label="Common preceptor ratio vs. the 1:1 best practice"
+            stat="1:1"
+            label="Best-practice preceptor ratio — ratios often exceed it on understaffed units"
             tone="purple"
           />
         </div>
+        <p className="mt-6 max-w-3xl font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
+          Source — NSI Vizient <i>2026 National Health Care Retention &amp; RN Staffing Report</i> (2025 data; first-year RN turnover &gt; 30%; per-turnover cost ≈ $60,090). Overall RN turnover ≈ 17%; first-year is the load-bearing figure for onboarding ROI.
+        </p>
       </div>
     </section>
   );

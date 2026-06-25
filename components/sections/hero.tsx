@@ -17,7 +17,7 @@ export function Hero() {
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-ink-2 md:text-xl">
               AIWIZN is an AI-driven nursing education and competency mastery
               platform that replaces outdated onboarding with immersive,
-              scenario-driven learning — measurably reducing clinical errors,
+              scenario-driven learning — designed to reduce clinical errors,
               turnover, and time-to-competency across a nurse&apos;s entire career
               lifecycle.
             </p>
@@ -36,11 +36,17 @@ export function Hero() {
         </div>
 
         <dl className="mt-16 grid grid-cols-2 gap-8 border-t border-ink/10 pt-10 md:grid-cols-4">
-          <Stat value="$52K" label="Avg. cost saved per nurse retained" />
-          <Stat value="6–12 mo" label="Time to independent competency, traditional path" />
-          <Stat value="28%" label="Knowledge retained at 6 months, single-session training" />
-          <Stat value="$917B" label="Projected U.S. workforce shortage cost by 2030" />
+          <Stat value="≈ $60K" label="Cost each first-year RN turnover avoids (NSI 2026)" />
+          <Stat value="6–12 mo" label="Time to independent competency, traditional path (Benner; AACN nurse residency)" />
+          <Stat value="< ⅓" label="Knowledge retained at 6 months from single-session training (forgetting-curve literature; Schmidt & Bjork 1992)" />
+          <Stat value="$917B" label="Projected U.S. healthcare workforce shortage cost by 2030 (Mercer / NCSBN / HRSA)" />
         </dl>
+        <p className="mt-6 max-w-3xl font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
+          Sources — NSI Vizient <i>2026 National Health Care Retention &amp; RN Staffing Report</i> (2025 data, first-year RN turnover ≈ $60,090);
+          Benner (1984) <i>From Novice to Expert</i>; AACN Nurse Residency Program;
+          Schmidt &amp; Bjork (1992) <i>Psychological Science</i>;
+          Mercer <i>US Healthcare Labor Market Report</i>, NCSBN National Nursing Workforce Survey, HRSA projections (2030 figure).
+        </p>
       </div>
     </section>
   );

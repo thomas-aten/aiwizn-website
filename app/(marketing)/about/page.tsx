@@ -20,7 +20,7 @@ export default function AboutPage() {
           <p className="mt-6 max-w-prose text-lg leading-relaxed text-ink-2">
             AIWIZN is an AI-driven nursing education and competency mastery
             platform from Aten Inc. We pair multi-agentic AI systems with
-            evidence-based learning science and clinical advisory rigour to
+            evidence-based learning science and clinical advisory rigor to
             attack the nursing workforce crisis — not as a supply problem, but
             as the retention and competency development problem it actually is.
           </p>

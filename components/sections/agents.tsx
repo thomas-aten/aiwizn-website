@@ -13,7 +13,7 @@ export function AgentsGrid() {
       <div className="container py-20 md:py-28">
         <p className="label">The Platform</p>
         <h2 className="mt-4 max-w-4xl font-display text-3xl leading-tight text-ink md:text-5xl">
-          Ten specialised agents. One coherent learning system.
+          Ten specialized agents. One coherent learning system.
         </h2>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
           Each agent owns a distinct stage of the competency lifecycle —

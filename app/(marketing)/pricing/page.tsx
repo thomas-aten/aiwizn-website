@@ -19,8 +19,15 @@ export default function PricingPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
             One subscription, both engines. Adaptive scenario practice,
-            stealth assessment, and Joint Commission 2026 readiness — backed by
-            21 years of evidence-anchored simulation work.
+            stealth assessment, and preparation for Joint Commission 2026
+            standards (including RUAIH) — backed by 21 years of
+            evidence-anchored simulation work.
+          </p>
+          <p className="mt-3 max-w-2xl text-xs leading-relaxed text-ink-3">
+            AIWIZN prepares organizations and people for AI-readiness and
+            accreditation standards including Joint Commission RUAIH. AIWIZN
+            does not confer, certify, issue, or substitute for Joint Commission
+            certification — only the Joint Commission can issue RUAIH.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact" className="btn-primary">
@@ -67,7 +74,7 @@ export default function PricingPage() {
               <ul className="mt-3 grid gap-2 text-sm text-ink-2 sm:grid-cols-2 lg:grid-cols-3">
                 <li>• Unlimited scenario runs</li>
                 <li>• Stealth competency analytics</li>
-                <li>• Joint Commission 2026 mapping</li>
+                <li>• Joint Commission 2026 / RUAIH readiness preparation</li>
                 <li>• Adaptive Goldilocks calibration</li>
                 <li>• Formative feedback (RESONANCE)</li>
                 <li>• Lifecycle re-assessment (CONTINUUM)</li>

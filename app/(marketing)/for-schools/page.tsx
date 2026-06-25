@@ -6,7 +6,7 @@ import { OfferingMatrix } from "@/components/sections/offering-matrix";
 export const metadata: Metadata = {
   title: "For Schools",
   description:
-    "AIWIZN for nursing schools — NCLEX-NGN aligned scenario practice, clinical judgement development, and competency analytics for faculty.",
+    "AIWIZN for nursing schools — NCLEX-NGN aligned scenario practice, clinical judgment development, and competency analytics for faculty.",
 };
 
 const POINTS = [
@@ -15,8 +15,8 @@ const POINTS = [
     body: "Scenarios mapped to the Clinical Judgment Measurement Model and current NGN item types.",
   },
   {
-    title: "Clinical judgement, made visible",
-    body: "Faculty see exactly where students are stuck — recognition, prioritisation, escalation, communication — and why.",
+    title: "Clinical judgment, made visible",
+    body: "Faculty see exactly where students are stuck — recognition, prioritization, escalation, communication — and why.",
   },
   {
     title: "Authoring on your terms",
@@ -35,14 +35,15 @@ export default function ForSchoolsPage() {
         <div className="container pt-20 pb-8 md:pt-28">
           <p className="label">For Schools</p>
           <h1 className="mt-4 max-w-4xl font-display text-4xl leading-[1.05] text-ink md:text-6xl">
-            Modern clinical judgement, <br className="hidden md:block" />
+            Modern clinical judgment, <br className="hidden md:block" />
             measured on every action.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
             Built on evidence-centered design and Bayesian knowledge networks —
-            the gold standard in psychometric science — AIWIZN gives nursing
-            schools a way to develop, observe, and certify clinical judgement
-            without artificial testing.
+            a leading approach in psychometric science (Shute &amp; Ventura 2013,
+            <i>Stealth Assessment</i>) — AIWIZN gives nursing schools a way to
+            develop, observe, and certify clinical judgment without
+            artificial testing.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact" className="btn-primary">
@@ -71,7 +72,7 @@ export default function ForSchoolsPage() {
       <OfferingMatrix
         eyebrow="What ships today"
         title="Engines your programme can build on."
-        intro="The Clinical Engine and Patient Care Onboarding map cleanly to NCLEX-NGN and CNA scope. AI Readiness gives schools a first-of-its-kind way to teach (and measure) how students reason about AI tools in clinical decision-making."
+        intro="The Clinical Engine and Patient Care Onboarding map cleanly to NCLEX-NGN and CNA scope. AI Readiness offers schools an early-stage approach to teaching how students reason about AI tools in clinical decision-making."
       />
 
       <CTA />

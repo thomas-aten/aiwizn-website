@@ -6,7 +6,7 @@ import { OfferingMatrix } from "@/components/sections/offering-matrix";
 export const metadata: Metadata = {
   title: "Platform",
   description:
-    "The AIWIZN platform — ten specialised agents organised across a four-stage virtuous learning flywheel.",
+    "The AIWIZN platform — ten specialized agents organized across a four-stage virtuous learning flywheel.",
 };
 
 export default function PlatformPage() {
@@ -16,7 +16,7 @@ export default function PlatformPage() {
         <div className="container pt-20 pb-8 md:pt-28">
           <p className="label">The Platform</p>
           <h1 className="mt-4 max-w-4xl font-display text-4xl leading-[1.05] text-ink md:text-6xl">
-            Built for the rigour the profession demands.
+            Built for the rigor the profession demands.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
             Every design decision is evidence-anchored. AIWIZN combines

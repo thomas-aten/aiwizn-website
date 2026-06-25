@@ -39,9 +39,10 @@ export default function ForHospitalsPage() {
             Keep the nurses you hire.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
-            Inadequate onboarding is cited in 35% of first-year departures.
-            AIWIZN measurably reduces clinical errors, turnover, and
-            time-to-competency — with the rigour the profession demands.
+            Inadequate onboarding is cited in roughly a third of first-year
+            RN departures (NSI 2026). AIWIZN is designed to reduce clinical
+            errors, turnover, and time-to-competency — with the rigor the
+            profession demands.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contact" className="btn-primary">

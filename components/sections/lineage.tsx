@@ -10,7 +10,7 @@ const ITEMS: LineageItem[] = [
     src: "/images/dermatology.jpg",
     alt: "Bedside clinical scenario — situational and application-based assessment",
     caption: "Bedside clinical scenarios",
-    domain: "Clinical · NBME-recognised",
+    domain: "Clinical · NBME semifinalist (2015)",
   },
   {
     src: "/images/pilot.jpg",
@@ -42,9 +42,9 @@ interface Award {
 const AWARDS: Award[] = [
   {
     year: "2017",
-    title: "Cited as a Key Player",
-    org: "World Serious Game Market Forecast 2017–2023",
-    detail: "Independent industry analyst recognition for serious-game design.",
+    title: "Named in industry market forecasts",
+    org: "Serious Game market forecasts (2017–2023)",
+    detail: "Named in syndicated market-research coverage of the serious-game category. Publisher reference held in the AIWIZN data room.",
   },
   {
     year: "2015",
@@ -54,9 +54,9 @@ const AWARDS: Award[] = [
   },
   {
     year: "2012",
-    title: "Innovation Award",
-    org: "JP Morgan Chase · Jamie Dimon",
-    detail: "Recognised by the CEO for excellence in enterprise innovation.",
+    title: "Excellence in Innovation Award",
+    org: "JP Morgan Chase",
+    detail: "Recognized for excellence in enterprise innovation across a JP Morgan Chase technology programme.",
   },
   {
     year: "2011",
@@ -82,9 +82,10 @@ export function Lineage() {
         </h2>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
           AIWIZN evolves from Aten Inc.&apos;s 21-year portfolio of adaptive,
-          scenario-driven training systems — anchored in research-proven
-          pedagogy and serious-game best practices. The same engine that taught
-          pilots, manufacturers, and clinicians now teaches nurses.
+          scenario-driven training systems — anchored in evidence-anchored
+          pedagogy and serious-game best practices. ATEN&apos;s portfolio
+          includes immersive training for pilots, manufacturers, and
+          clinicians; AIWIZN extends that lineage to nursing.
         </p>
 
         {/* Portfolio thumbnails */}
@@ -116,7 +117,7 @@ export function Lineage() {
         <div className="mt-16">
           <p className="label">Recognition</p>
           <h3 className="mt-3 max-w-3xl font-display text-2xl leading-tight text-ink md:text-3xl">
-            Awarded by the institutions that set the bar.
+            Recognized by the institutions that set the bar.
           </h3>
           <ol className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 md:grid-cols-2 lg:grid-cols-5">
             {AWARDS.map((a) => (
@@ -148,11 +149,11 @@ export function Lineage() {
             </h3>
             <p className="mt-4 max-w-prose text-base leading-relaxed text-ink-2">
               AIWIZN&apos;s flywheel is the clinical implementation of Aten&apos;s
-              research-proven adaptive learning loop — the same Cerebrum /
+              evidence-anchored adaptive learning loop — the same Cerebrum /
               Cerebellum / Arete architecture that powered enterprise simulations
-              for Fortune 500s and earned a JP Morgan Chase innovation award
-              under Jamie Dimon. Built on serious-game best practices, validated
-              by NBME, MacArthur, and Gates.
+              for Fortune 500s and earned a JP Morgan Chase Excellence in
+              Innovation Award. Built on serious-game best practices, recognized
+              by NBME, MacArthur, and Gates programs.
             </p>
           </div>
           <figure className="overflow-hidden rounded-xl border border-ink/10 bg-cream-light">

@@ -14,7 +14,7 @@ const STAGE_DETAIL: Record<
   },
   assess: {
     headline: "Stealth Intelligence.",
-    body: "No explicit testing. Competency inferred invisibly from every simulation action via Bayesian knowledge networks — the gold standard in psychometric science.",
+    body: "No explicit testing. Competency inferred invisibly from every simulation action via Bayesian knowledge networks — a leading approach in psychometric science (Shute & Ventura 2013, Stealth Assessment).",
   },
   relearn: {
     headline: "Reinforce & Advance.",

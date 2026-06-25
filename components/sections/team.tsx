@@ -29,7 +29,7 @@ const ADVISORS: Person[] = [
     role: "Deputy Executive Director, Tennessee Population Health Consortium",
     affiliation:
       "University of Tennessee School of Health Sciences — School of Medicine",
-    bio: "Valid active RN and Advanced Nurse Practitioner licensure. Experienced clinical, operational, and business leader across health-system organisations. Pairs frontline nursing practice with health-economics, analytics, and value-based-care strategy — informing how AIWIZN translates nursing-education frameworks into scalable clinical learning architectures.",
+    bio: "Valid active RN and Advanced Nurse Practitioner licensure. Experienced clinical, operational, and business leader across health-system organizations. Pairs frontline nursing practice with health-economics, analytics, and value-based-care strategy — informing how AIWIZN translates nursing-education frameworks into scalable clinical learning architectures.",
     linkedin:
       "https://www.linkedin.com/in/annie-ninan-ma-economics-mba-msn-fnp-bc",
     image: "/images/team/annie.jpeg",
@@ -60,7 +60,7 @@ const ADVISORS: Person[] = [
     credentials: "MD, MSCR",
     role: "Surgeon · Division Chief, Minimally Invasive Gynecologic Surgery · Co-Executive Director, FastTraCS",
     affiliation: "University of North Carolina",
-    bio: "UNC surgeon-innovator leading the Division of Minimally Invasive Gynecologic Surgery and co-leading FastTraCS, UNC's clinical-innovation accelerator. Pairs procedural rigour with translational research and device design — informing AIWIZN's PRAXIS and NARRATIVE work on procedural fidelity, clinical-judgement formation, and innovation pathways from bedside insight to validated practice.",
+    bio: "UNC surgeon-innovator leading the Division of Minimally Invasive Gynecologic Surgery and co-leading FastTraCS, UNC's clinical-innovation accelerator. Pairs procedural rigor with translational research and device design — informing AIWIZN's PRAXIS and NARRATIVE work on procedural fidelity, clinical-judgment formation, and innovation pathways from bedside insight to validated practice.",
     linkedin: "https://www.linkedin.com/in/erin-c-66b4b7a7",
     image: "/images/team/erin.png",
     accent: "purple",

@@ -49,11 +49,16 @@ type EngineCard = {
 };
 
 // AI Readiness Engine (ARI) is live at demo.aiwizn.com/ai-readiness/ — flipped
-// ON 2026-06-25 (Thomas, engine-catalog consolidation pass) so the offering
-// × AIWIZN-generic-tenant matrix is complete on the hub. Leave this flag in
-// place; it lets us re-gate the card quickly if AR scenario content needs to
-// be pulled. (AI Readiness v1, Phase 1: 5 RUAIH-aligned scenarios + ARI scoring.)
-const SHOW_AI_READINESS = true;
+// OFF 2026-06-25 (Thomas, consolidated Dispatch order Part 0) because the
+// completion-email Postgres trigger (`private.notify_new_session`) still sends
+// the CLINICAL learner email for AR completions (Bug A: wrong eyebrow/index/
+// stage copy; Bug B: empty domains at 0% because the trigger reads d1…d12
+// clinical columns instead of raw_payload.ari_domains). Re-flip to true ONLY
+// after migration `20260625120000_notify_new_session_offering_dispatch.sql`
+// is applied to production AND verified end-to-end. Hub allowlist is
+// Graham / Diane / Robin / Lynn — do not risk the broken email reaching them.
+// Engine URL stays live for internal ateninc.com testing.
+const SHOW_AI_READINESS = false;
 
 function buildCards(): EngineCard[] {
   return [
