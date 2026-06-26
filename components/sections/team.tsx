@@ -65,6 +65,13 @@ const ADVISORS: Person[] = [
     image: "/images/team/erin.png",
     accent: "purple",
   },
+  {
+    name: "Lynn Kenyon, RN",
+    role: "Clinical Advisor",
+    affiliation: "Duke Student Health",
+    bio: "Profile coming soon.",
+    accent: "teal",
+  },
 ];
 
 export function Team() {
@@ -88,6 +95,10 @@ export function Team() {
             ))}
           </div>
         </div>
+
+        <p className="mt-10 max-w-3xl font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
+          Advisor affiliations shown for identification only.
+        </p>
       </div>
     </section>
   );

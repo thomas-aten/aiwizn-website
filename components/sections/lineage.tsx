@@ -84,11 +84,11 @@ export function Lineage() {
           ATEN Inc., est. 2005.
         </p>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
-          AIWIZN evolves from Aten Inc.&apos;s 21-year portfolio of adaptive,
-          scenario-driven training systems — anchored in evidence-anchored
+          AIWIZN evolves from ATEN Inc.&apos;s 21-year portfolio of adaptive,
+          scenario-driven training systems — grounded in evidence-anchored
           pedagogy and serious-game best practices. ATEN&apos;s portfolio
-          includes immersive training for pilots, manufacturers, and
-          clinicians; AIWIZN extends that lineage to nursing.
+          spans immersive training for financial-services, life-sciences, and
+          industrial enterprises; AIWIZN extends that lineage to nursing.
         </p>
 
         {/* Portfolio thumbnails */}

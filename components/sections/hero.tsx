@@ -35,16 +35,21 @@ export function Hero() {
           <HeroVisual />
         </div>
 
-        <dl className="mt-16 grid grid-cols-2 gap-8 border-t border-ink/10 pt-10 md:grid-cols-4">
+        <dl className="mt-16 grid grid-cols-1 gap-8 border-t border-ink/10 pt-10 md:grid-cols-3">
           <Stat value="≈ $60K" label="Cost each first-year RN turnover avoids (NSI 2026)" />
           <Stat value="6–12 mo" label="Time to independent competency, traditional path (Benner; AACN nurse residency)" />
-          <Stat value="< ⅓" label="Knowledge retained at 6 months from single-session training (forgetting-curve literature; Schmidt & Bjork 1992)" />
           <Stat value="$917B" label="Projected U.S. healthcare workforce shortage cost by 2030 (Mercer / NCSBN / HRSA)" />
         </dl>
-        <p className="mt-6 max-w-3xl font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
+        <p className="mt-6 max-w-3xl text-sm leading-relaxed text-ink-2">
+          Most single-session onboarding is lost within months — the failure
+          mode AIWIZN is built to fix.{" "}
+          <span className="text-ink-3">
+            (Forgetting-curve literature; Schmidt &amp; Bjork, 1992.)
+          </span>
+        </p>
+        <p className="mt-4 max-w-3xl font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
           Sources — NSI Vizient <i>2026 National Health Care Retention &amp; RN Staffing Report</i> (2025 data, first-year RN turnover ≈ $60,090);
           Benner (1984) <i>From Novice to Expert</i>; AACN Nurse Residency Program;
-          Schmidt &amp; Bjork (1992) <i>Psychological Science</i>;
           Mercer <i>US Healthcare Labor Market Report</i>, NCSBN National Nursing Workforce Survey, HRSA projections (2030 figure).
         </p>
       </div>
