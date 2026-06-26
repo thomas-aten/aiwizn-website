@@ -108,7 +108,7 @@ export const ENGINES_INCLUDED = [
   {
     title: "AIWIZN Clinical Engine",
     blurb:
-      "The NBME-recognised scenario engine — PRAXIS · NARRATIVE · SIMULUS · COGNITA · RESONANCE working in concert.",
+      "The NBME-semifinalist (2015) scenario engine — PRAXIS · NARRATIVE · SIMULUS · COGNITA · RESONANCE working in concert.",
   },
   {
     title: "AIWIZN JC 2026 Engine",

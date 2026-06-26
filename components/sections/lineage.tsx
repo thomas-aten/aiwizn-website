@@ -80,6 +80,9 @@ export function Lineage() {
         <h2 className="mt-4 max-w-4xl font-display text-3xl leading-tight text-ink md:text-5xl">
           Twenty-one years of immersive simulation work — now turned on nursing.
         </h2>
+        <p className="mt-3 font-mono text-[10px] uppercase leading-snug tracking-label text-ink-3">
+          ATEN Inc., est. 2005.
+        </p>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-2">
           AIWIZN evolves from Aten Inc.&apos;s 21-year portfolio of adaptive,
           scenario-driven training systems — anchored in evidence-anchored

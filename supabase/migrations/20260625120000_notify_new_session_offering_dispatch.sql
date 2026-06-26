@@ -24,9 +24,18 @@
 -- The only behavioural change for a clinical row is the function call
 -- boundary; the resulting Resend payload is the same JSON.
 --
--- ── DISPATCH LOGIC ───────────────────────────────────────────────────
---   raw_payload->>'offering' = 'ai-readiness'   → ARI builder (new)
---   otherwise (clinical / NULL / unknown)       → clinical builder (preserved)
+-- ── DISPATCH LOGIC (revised — fails closed) ─────────────────────────
+--   raw_payload->>'offering' = 'ai-readiness'                          → ARI builder
+--   raw_payload->>'offering' = 'clinical'                              → clinical builder (preserved byte-identical)
+--   scenario_slug = 'cardiac-stroke-sepsis-v5' (legacy unstamped clin) → clinical builder
+--   otherwise (any unmapped / NULL / future offering)                  → NO learner email + INSERT into private.email_dispatch_log
+--
+-- Rationale: defaulting unmapped offerings to the clinical builder caused
+-- the AR completion-email defect (Bugs A + B). Forward-compat — when a new
+-- offering (PCRI, JCRI) adds learner-email capture, the engine must
+-- explicitly stamp `raw_payload.offering` AND a builder must be added
+-- here. Until then, the audit row in email_dispatch_log makes the gap
+-- visible instead of shipping a wrong email.
 --
 -- ── REGRESSION TEST (run after apply, AGAINST STAGING, NOT PROD) ─────
 -- See the regression assertion at the end of this file for the byte-
@@ -175,13 +184,16 @@ end;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────
--- 3.  Helper — CLINICAL learner email (preserved byte-identical)
+-- 3.  Helper — CLINICAL learner email (byte-identical to prod)
 --
--- The body of this function is the EXACT clinical persona email that
--- shipped before this migration. The only refactor is moving it from
--- inline into `notify_new_session()` to a callable helper. WakeMed,
--- UNC, Duke, AHN, and Demo Hospital clinical rows render the same
--- HTML bytes after this migration as before.
+-- Body is the EXACT learner-email block copied verbatim from the
+-- pre-migration `private.notify_new_session()` source via
+-- pg_get_functiondef. md5 of the verbatim slice (anchored from
+-- "-- ===== LEARNER PERSONA EMAIL" through the final closing `end if;`):
+--   2b5a1535f41044f8b4225b25afa43133  (11479 bytes)
+-- That md5 was the freeze-gate target before splice. The Resend POST
+-- payload this helper sends for a clinical row therefore has the same
+-- bytes as the pre-migration trigger output for the same row.
 -- ─────────────────────────────────────────────────────────────────────
 create or replace function private._persona_email_clinical(
   new public.prototype_sessions,
@@ -208,7 +220,7 @@ begin
   if _resend_key is null or _resend_key = '' then return; end if;
   if new.learner_email is null then return; end if;
 
-  -- Stage rubric (clinical) — verbatim from the pre-migration function.
+  -- ===== LEARNER PERSONA EMAIL =======================================
   if coalesce(new.nwi_pct, 0) >= 80 then
     _stage := 'Proficient → Expert';
     _stage_blurb := 'You demonstrate consistent expert-pattern decisions across high-stakes scenarios. Ready for advanced complexity.';
@@ -223,7 +235,6 @@ begin
     _stage_blurb := 'Early in your trajectory. Preceptor review and focused practice on flagged nodes is recommended before independent practice.';
   end if;
 
-  -- Clinical strongest / development (11 NWI domains in flat columns).
   select dn, sc into _top_name, _top_score
   from (values
     ('Ambiguity Tolerance',        new.d1_ambiguity),
@@ -290,75 +301,76 @@ begin
 
   _short_first := split_part(coalesce(new.nurse_name, 'Clinician'), ' ', 1);
 
-  _learner_body := jsonb_build_object(
-    'from',    _from_email,
-    'to',      jsonb_build_array(new.learner_email),
-    'reply_to','hello@aiwizn.com',
-    'subject', format('Your AIWIZN PERSONA — NWI %s%%', coalesce(new.nwi_pct, 0)),
-    'html', format(
-      '<div style=\"font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;color:#0A1826\">' ||
-      '<div style=\"padding:32px 28px 8px\">' ||
-        '<div style=\"font-size:11px;letter-spacing:0.18em;color:#00A87A;text-transform:uppercase;font-weight:600;margin-bottom:8px\">AIWIZN · CLINICAL ASSESSMENT</div>' ||
-        '<h1 style=\"margin:0 0 14px;font-size:26px;font-weight:600;line-height:1.3;color:#0A1826\">Your PERSONA: NWI %s%%</h1>' ||
-        '<p style=\"margin:0 0 18px;font-size:15px;line-height:1.6;color:#2E4A62\">%s, you completed the assessment. Here is what your decision pattern tells us.</p>' ||
-      '</div>' ||
-      '<div style=\"margin:0 28px;padding:20px 24px;background:#F5F8FA;border-radius:12px;border-left:4px solid #00A87A\">' ||
-        '<div style=\"font-size:10px;letter-spacing:0.14em;color:#6B88A0;text-transform:uppercase;font-weight:600;margin-bottom:6px\">Stage</div>' ||
-        '<div style=\"font-size:18px;font-weight:600;color:#0A1826;margin-bottom:6px\">%s</div>' ||
-        '<div style=\"font-size:13.5px;color:#2E4A62;line-height:1.55;margin-bottom:14px\">%s</div>' ||
-        '<div style=\"font-size:13px;color:#6B88A0\">' ||
-          '<span style=\"color:#00A87A;font-weight:700\">%s expert</span> · ' ||
-          '<span style=\"color:#B45309;font-weight:700\">%s developing</span> · ' ||
-          '<span style=\"color:#DC2626;font-weight:700\">%s gap</span>' ||
+  if _resend_key is not null and _resend_key <> '' then
+    _learner_body := jsonb_build_object(
+      'from',    _from_email,
+      'to',      jsonb_build_array(new.learner_email),
+      'reply_to','hello@aiwizn.com',
+      'subject', format('Your AIWIZN PERSONA — NWI %s%%', coalesce(new.nwi_pct, 0)),
+      'html', format(
+        '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;color:#0A1826">' ||
+        '<div style="padding:32px 28px 8px">' ||
+          '<div style="font-size:11px;letter-spacing:0.18em;color:#00A87A;text-transform:uppercase;font-weight:600;margin-bottom:8px">AIWIZN · CLINICAL ASSESSMENT</div>' ||
+          '<h1 style="margin:0 0 14px;font-size:26px;font-weight:600;line-height:1.3;color:#0A1826">Your PERSONA: NWI %s%%</h1>' ||
+          '<p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#2E4A62">%s, you completed the assessment. Here is what your decision pattern tells us.</p>' ||
         '</div>' ||
-      '</div>' ||
-      '<div style=\"padding:24px 28px 0\">' ||
-        '<div style=\"margin-bottom:22px\">' ||
-          '<div style=\"font-size:10px;letter-spacing:0.14em;color:#00A87A;text-transform:uppercase;font-weight:600;margin-bottom:6px\">✦ Your strongest competency</div>' ||
-          '<div style=\"font-size:16px;font-weight:600;color:#0A1826;margin-bottom:6px\">%s <span style=\"color:#6B88A0;font-weight:400;font-size:13px\">(%s%%)</span></div>' ||
-          '<div style=\"font-size:13.5px;color:#2E4A62;line-height:1.65\">%s</div>' ||
+        '<div style="margin:0 28px;padding:20px 24px;background:#F5F8FA;border-radius:12px;border-left:4px solid #00A87A">' ||
+          '<div style="font-size:10px;letter-spacing:0.14em;color:#6B88A0;text-transform:uppercase;font-weight:600;margin-bottom:6px">Stage</div>' ||
+          '<div style="font-size:18px;font-weight:600;color:#0A1826;margin-bottom:6px">%s</div>' ||
+          '<div style="font-size:13.5px;color:#2E4A62;line-height:1.55;margin-bottom:14px">%s</div>' ||
+          '<div style="font-size:13px;color:#6B88A0">' ||
+            '<span style="color:#00A87A;font-weight:700">%s expert</span> · ' ||
+            '<span style="color:#B45309;font-weight:700">%s developing</span> · ' ||
+            '<span style="color:#DC2626;font-weight:700">%s gap</span>' ||
+          '</div>' ||
         '</div>' ||
-        '<div>' ||
-          '<div style=\"font-size:10px;letter-spacing:0.14em;color:#B45309;text-transform:uppercase;font-weight:600;margin-bottom:6px\">↗ Development area</div>' ||
-          '<div style=\"font-size:16px;font-weight:600;color:#0A1826;margin-bottom:6px\">%s <span style=\"color:#6B88A0;font-weight:400;font-size:13px\">(%s%%)</span></div>' ||
-          '<div style=\"font-size:13.5px;color:#2E4A62;line-height:1.65\">%s</div>' ||
+        '<div style="padding:24px 28px 0">' ||
+          '<div style="margin-bottom:22px">' ||
+            '<div style="font-size:10px;letter-spacing:0.14em;color:#00A87A;text-transform:uppercase;font-weight:600;margin-bottom:6px">✦ Your strongest competency</div>' ||
+            '<div style="font-size:16px;font-weight:600;color:#0A1826;margin-bottom:6px">%s <span style="color:#6B88A0;font-weight:400;font-size:13px">(%s%%)</span></div>' ||
+            '<div style="font-size:13.5px;color:#2E4A62;line-height:1.65">%s</div>' ||
+          '</div>' ||
+          '<div>' ||
+            '<div style="font-size:10px;letter-spacing:0.14em;color:#B45309;text-transform:uppercase;font-weight:600;margin-bottom:6px">↗ Development area</div>' ||
+            '<div style="font-size:16px;font-weight:600;color:#0A1826;margin-bottom:6px">%s <span style="color:#6B88A0;font-weight:400;font-size:13px">(%s%%)</span></div>' ||
+            '<div style="font-size:13.5px;color:#2E4A62;line-height:1.65">%s</div>' ||
+          '</div>' ||
         '</div>' ||
-      '</div>' ||
-      '<div style=\"margin:32px 0 0;padding:22px 28px;background:#0A1826;color:#fff\">' ||
-        '<div style=\"font-size:10px;letter-spacing:0.14em;color:#00EDB4;text-transform:uppercase;font-weight:600;margin-bottom:8px\">What is next</div>' ||
-        '<p style=\"margin:0 0 16px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85)\">Share your PERSONA with a colleague, or revisit the assessment in 30 days to see your trajectory. Reply to this email if you would like to discuss your results.</p>' ||
-        '<a href=\"%s\" style=\"display:inline-block;padding:11px 22px;background:#00A87A;color:#fff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;letter-spacing:0.04em\">Open AIWIZN →</a>' ||
-      '</div>' ||
-      '<div style=\"padding:18px 28px 28px;font-size:11px;color:#A2BAC8;text-align:center;line-height:1.6\">' ||
-        'AIWIZN · Clinical Assessment Engine · Aten Inc<br>' ||
-        'You received this because you completed an AIWIZN session.' ||
-      '</div>' ||
-      '</div>',
-      coalesce(new.nwi_pct, 0),
-      _short_first,
-      _stage,
-      _stage_blurb,
-      coalesce(new.expert_count, 0),
-      coalesce(new.mid_count, 0),
-      coalesce(new.gap_count, 0),
-      coalesce(_top_name, '—'),
-      coalesce(_top_score, 0),
-      _top_meaning,
-      coalesce(_bot_name, '—'),
-      coalesce(_bot_score, 0),
-      _bot_step,
-      _site_url
-    )
-  );
-
-  perform net.http_post(
-    url     => 'https://api.resend.com/emails',
-    body    => _learner_body,
-    headers => jsonb_build_object(
-      'Content-Type',  'application/json',
-      'Authorization', 'Bearer ' || _resend_key
-    )
-  );
+        '<div style="margin:32px 0 0;padding:22px 28px;background:#0A1826;color:#fff">' ||
+          '<div style="font-size:10px;letter-spacing:0.14em;color:#00EDB4;text-transform:uppercase;font-weight:600;margin-bottom:8px">What is next</div>' ||
+          '<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85)">Share your PERSONA with a colleague, or revisit the assessment in 30 days to see your trajectory. Reply to this email if you would like to discuss your results.</p>' ||
+          '<a href="%s" style="display:inline-block;padding:11px 22px;background:#00A87A;color:#fff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600;letter-spacing:0.04em">Open AIWIZN →</a>' ||
+        '</div>' ||
+        '<div style="padding:18px 28px 28px;font-size:11px;color:#A2BAC8;text-align:center;line-height:1.6">' ||
+          'AIWIZN · Clinical Assessment Engine · Aten Inc<br>' ||
+          'You received this because you completed an AIWIZN session.' ||
+        '</div>' ||
+        '</div>',
+        coalesce(new.nwi_pct, 0),
+        _short_first,
+        _stage,
+        _stage_blurb,
+        coalesce(new.expert_count, 0),
+        coalesce(new.mid_count, 0),
+        coalesce(new.gap_count, 0),
+        coalesce(_top_name, '—'),
+        coalesce(_top_score, 0),
+        _top_meaning,
+        coalesce(_bot_name, '—'),
+        coalesce(_bot_score, 0),
+        _bot_step,
+        _site_url
+      )
+    );
+    perform net.http_post(
+      url     => 'https://api.resend.com/emails',
+      body    => _learner_body,
+      headers => jsonb_build_object(
+        'Content-Type',  'application/json',
+        'Authorization', 'Bearer ' || _resend_key
+      )
+    );
+  end if;
 end;
 $$;
 
@@ -537,6 +549,48 @@ end;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────
+-- 4b.  email_dispatch_log — audit trail of UNMAPPED offerings
+--
+-- The dispatch (section 5) now fails CLOSED on any row whose offering is
+-- not explicitly mapped to a builder. Instead of inheriting the clinical
+-- skin (Bug A + Bug B), we INSERT a row here and raise a NOTICE. Surfaces
+-- "where's my email?" instead of "wrong email shipped." This is the safer
+-- failure mode for prospect-facing surfaces.
+-- ─────────────────────────────────────────────────────────────────────
+create table if not exists private.email_dispatch_log (
+  id                  bigserial primary key,
+  recorded_at         timestamptz not null default now(),
+  session_id          uuid,
+  session_uid         text,
+  learner_email       text,
+  scenario_slug       text,
+  offering_attempted  text,
+  reason              text
+);
+
+comment on table private.email_dispatch_log is
+  'Records every prototype_sessions row whose offering didn''t resolve to a known builder. Read this when investigating "missing completion email" reports.';
+
+create or replace function private._log_unmapped_offering(
+  new       public.prototype_sessions,
+  _offering text,
+  _reason   text
+) returns void
+language plpgsql
+security definer
+set search_path to 'private','public','extensions'
+as $$
+begin
+  insert into private.email_dispatch_log
+    (session_id, session_uid, learner_email, scenario_slug, offering_attempted, reason)
+  values
+    (new.id, new.session_uid, new.learner_email, new.scenario_slug, _offering, _reason);
+  raise notice '[notify_new_session] no learner email sent — unmapped offering=% scenario_slug=% (logged to private.email_dispatch_log)',
+    coalesce(_offering,'(null)'), coalesce(new.scenario_slug,'(null)');
+end;
+$$;
+
+-- ─────────────────────────────────────────────────────────────────────
 -- 5.  Dispatch — the trigger function itself
 --
 -- For an unrecognised offering (including NULL / empty / a future
@@ -577,13 +631,35 @@ begin
   perform private._slack_notify_session(new, _slack_url, _site_url);
   perform private._internal_email_session(new, _resend_key, _from_email, _to_email, _site_url);
 
-  -- Learner-facing dispatch — by offering stamp.
-  _offering := lower(coalesce(new.raw_payload->>'offering', 'clinical'));
+  -- Learner-facing dispatch — STRICT, fail closed.
+  --
+  -- Per the 2026-06-25 cross-engine audit: defaulting to the clinical builder
+  -- lets every new / unmapped / unstamped offering inherit the clinical skin
+  -- (Bugs A + B confirmed for AI Readiness; latent for JC2026). We now fire
+  -- the clinical builder ONLY on an explicit signal. Everything else logs to
+  -- private.email_dispatch_log and skips the learner email.
+  --
+  -- Explicit clinical signals (either is sufficient):
+  --   (1) raw_payload->>'offering' = 'clinical'
+  --   (2) scenario_slug = 'cardiac-stroke-sepsis-v5'   ← the legacy clinical
+  --       engine has never stamped its offering; all 20 historical clinical
+  --       rows use this scenario_slug (verified 2026-06-25). Treated as an
+  --       implicit clinical signal so the WakeMed-frozen engine continues
+  --       to receive the byte-identical clinical email without an engine-
+  --       side change.
+  _offering := lower(coalesce(new.raw_payload->>'offering', ''));
+
   if _offering = 'ai-readiness' then
     perform private._persona_email_ari(new, _resend_key, _from_email, _site_url);
-  else
-    -- 'clinical', NULL, '', and any unrecognised offering all land here.
+  elsif _offering = 'clinical' or new.scenario_slug = 'cardiac-stroke-sepsis-v5' then
     perform private._persona_email_clinical(new, _resend_key, _from_email, _site_url);
+  else
+    perform private._log_unmapped_offering(
+      new,
+      nullif(_offering, ''),
+      'no builder mapped for offering=' || coalesce(nullif(_offering,''),'(null)')
+        || ' scenario_slug=' || coalesce(new.scenario_slug,'(null)')
+    );
   end if;
 
   return new;
