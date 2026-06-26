@@ -44,9 +44,23 @@ Lightweight, append-only working list. New items go to the bottom; closed items 
 
 ### Shell v1 wire-up (deferred per directive)
 
-- Shell modules (`engine-shell.css`, `engine-shell.js`, `resonance-host.js`, `index-viz.js`, `persistence.js`, `scene-art.js`) sit in `aiwizn-clinical-engine/shell/` — written, untouched.
+- Shell modules (`engine-shell.css`, `engine-shell.js`, `resonance-host.js`, `index-viz.js`, `persistence.js`, `scene-art.js`) sit in `aiwizn-clinical-engine/shell/` — written, untouched. **Note (2026-06-26):** only `engine-shell.js`, `resonance-host.js`, and the renamed `NAMING_CONVENTIONS.md` are currently in the `shell/` directory on disk — the other four shell modules from earlier turns appear to have been removed (working-tree cleanup between sessions). They will need to be re-staged when the wire-up resumes.
 - AI Readiness `index.html` consumes them after the completion-email defect is verified shipped.
-- AR-card hub re-enable depends on the same condition.
+- AR-card hub re-enable depends on this PLUS the prior gates.
+
+### AR engine prod-verify (2026-06-26) — gates for SHOW_AI_READINESS=true
+
+| Item | Status | Note |
+|---|---|---|
+| 1. ARI scoring end-to-end | ✓ PASS | All 5 domains compute non-zero on full sweep; composite computes; stage bands correct |
+| 2. Completion email (real fire) | ✓ PASS | 2 Resend POSTs HTTP 200 (internal + ARI learner); content needs Thomas inbox eyeball |
+| 3. Persistence indicator | ✓ PASS | LIVE chip + ari-save-pill (sync / ok / fail) + pending-saves queue; no demo-mode fallback path in code |
+| 4. Shell parity | ⚠ PARTIAL | Visual parity by copy-pattern (cream surface, fonts, layout). ARIA display name ✓. Code-level shell-module wiring NOT shipped (Shell v1 wire-up still deferred). Looks consistent to a visitor; isn't yet sharing the shell/ modules. |
+| 5. Tenant-config cleanliness | ✓ PASS | Zero tenant literals in `scenarios.json` or the engine's user-facing strings. The only WakeMed/UNC/Duke/Allegheny mentions are inside the doc-comment header that documents what the engine does NOT touch. |
+
+Open call for Thomas: PARTIAL on Item 4 is the only sub-green. Two paths:
+- **Accept the partial** and flip `SHOW_AI_READINESS=true` now — the engine looks consistent to a visitor; shell-module wire-up is a separate refactor.
+- **Hold the flip** until Shell v1 wire-up ships — strict reading of the original "shell parity" gate.
 
 ---
 
@@ -62,4 +76,4 @@ Lightweight, append-only working list. New items go to the bottom; closed items 
 - **2026-06-25 · Engine Shell v1 rename** — `aria-host.js` → `resonance-host.js`; namespace `ARIAHost` → `ResonanceHost`; persona key `ariaPersona` → `resonancePersona`; default mentor `'ARIA'` → `'RESONANCE'`; CSS `.es-aria-tag` aliased to `.es-resonance-tag` for back-compat.
 - **2026-06-25 · Cross-engine notification audit** — matrix delivered; class-bug surface enumerated; revised dispatch (fail-closed + log) encoded in the staged migration.
 - **2026-06-25 · Email-fix migration applied + smoke-verified** — `private.notify_new_session()` refactor live in prod; clinical helper byte-identical (md5 `2b5a1535f41044f8b4225b25afa43133`); ARI builder live; `private.email_dispatch_log` table + `_log_unmapped_offering` helper added; fail-closed dispatch routes unmapped offerings to log-and-no-send. Smoke #1/#2/#3 all green; sentinel-tagged synthetic rows cleaned up.
-- **2026-06-26 · Naming rule — ARIA (UI) / RESONANCE (code/framework)** — `shell/resonance-host.js` now resolves display name with `tenantConfig.terminology.display_name` → `terminology.mentor_name` → `persona.displayName` → `persona.mentor_name` → `'ARIA'`. Default flipped from RESONANCE to ARIA for UI rendering. Code-side names (file `resonance-host.js`, namespace `window.ResonanceHost`, config key `resonancePersona`, CSS `.es-resonance-tag`) all unchanged. Rule documented in new `shell/MESSAGING_KIT.md`.
+- **2026-06-26 · Naming rule — ARIA (UI) / RESONANCE (code/framework)** — `shell/resonance-host.js` now resolves display name with `tenantConfig.terminology.display_name` → `terminology.mentor_name` → `persona.displayName` → `persona.mentor_name` → `'ARIA'`. Default flipped from RESONANCE to ARIA for UI rendering. Code-side names (file `resonance-host.js`, namespace `window.ResonanceHost`, config key `resonancePersona`, CSS `.es-resonance-tag`) all unchanged. Naming rule documented in `shell/NAMING_CONVENTIONS.md` (scoped to the ARIA/RESONANCE split only — the canonical 10-agent messaging kit lives separately as `AIWIZN_Messaging_Kit.md`).
