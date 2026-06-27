@@ -35,12 +35,13 @@ coverage
 next-env.d.ts
 *.tsbuildinfo
 
-# marketing materials — generated DOCX/PPTX/PDF deliverables.
+# Confidential marketing binaries — keep out of git history & out of deploy.
 # Lives in iCloud as the canonical store; sync via marketing/wakemed/sync_to_icloud.sh.
 # Keep the sync script tracked, ignore everything else under marketing/.
 marketing/**/*.docx
 marketing/**/*.pptx
 marketing/**/*.pdf
+marketing/**/*.key
 marketing/**/sources/
 
 # scratch — verification scripts spawned by code tasks, safe to ignore
