@@ -70,6 +70,7 @@ const ADVISORS: Person[] = [
     role: "Clinical Advisor",
     affiliation: "Duke Student Health",
     bio: "Profile coming soon.",
+    image: "/images/team/lynn.png",
     accent: "teal",
   },
 ];
