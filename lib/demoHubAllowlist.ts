@@ -57,6 +57,10 @@ const INVITE_EMAILS: readonly string[] = [
   "diane.rhyne@unchealth.unc.edu",
   "robin.jacob@unchealth.unc.edu",
   "palamara@pinnaclemx.com",  // Paul Palamara · Pinnacle Mx Group · sales channel partner · added 2026-06-21
+  // TODO(2026-06-30) — add Arvind Kumar's evaluator email (EisnerAmper, RUAIH Org Readiness
+  // engine reviewer). Hash-link demo path at demo.aiwizn.com/ruaih-readiness/ works for him
+  // without /demo hub access; this entry is for hub access only. Awaiting exact address
+  // from Thomas. Format: <name>@eisneramper.com (lowercased).
 ];
 
 const INVITE_SET = new Set(INVITE_EMAILS.map((e) => e.toLowerCase()));

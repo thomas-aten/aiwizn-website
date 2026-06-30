@@ -60,6 +60,14 @@ type EngineCard = {
 // Engine URL stays live for internal ateninc.com testing.
 const SHOW_AI_READINESS = false;
 
+// RUAIH Organizational Readiness Engine (RRI) MVP is live at
+// demo.aiwizn.com/ruaih-readiness/ — flipped OFF 2026-06-30 (Thomas, EOD
+// build order). Ship dark until Thomas eyeballs the live engine and
+// confirms the mapping disclaimer + ARIA advisor copy. Engine itself is
+// reachable at the URL above for internal review; this hub card is
+// suppressed.
+const SHOW_RUAIH = false;
+
 function buildCards(): EngineCard[] {
   return [
     ...(SHOW_AI_READINESS
@@ -110,6 +118,19 @@ function buildCards(): EngineCard[] {
         "Joint-Commission-tailored build for the RUAIH partnership — in-progress configuration of the JC2026 engine with RUAIH protocol overlays. Placeholder card while the tenant config is staged.",
       meta: "RUAIH · In progress",
     },
+    ...(SHOW_RUAIH
+      ? [
+          {
+            id: "ruaih-readiness",
+            status: "live" as const,
+            title: "RUAIH Organizational Readiness Engine (RRI)",
+            blurb:
+              "Organization-level conformance self-assessment across the five RUAIH standards families — Governance, Data Management, Risk & Bias, Monitoring & Validation, and Transparency, Education & Training. Returns the RUAIH Readiness Index (RRI) with family sub-scores, evidence-needs scorecard, and a prioritized gap list. Formative and self-assessed; does NOT certify, predict the survey outcome, or substitute for the Joint Commission review.",
+            meta: "RRI · 5 families · 15 conformance items · MVP",
+            href: "https://demo.aiwizn.com/ruaih-readiness/",
+          },
+        ]
+      : []),
     {
       id: "unc-medical-center",
       status: "live",
