@@ -57,17 +57,45 @@ const INVITE_EMAILS: readonly string[] = [
   "diane.rhyne@unchealth.unc.edu",
   "robin.jacob@unchealth.unc.edu",
   "palamara@pinnaclemx.com",  // Paul Palamara · Pinnacle Mx Group · sales channel partner · added 2026-06-21
+  // Dr. Graham Snyder (WakeMed CIL · clinical advisor) — added 2026-07-01. Gmail address;
+  // Gmail ignores dots in the local part, so we accept both the dotted + non-dotted
+  // literal here AND normalize gmail addresses in isDemoHubAllowed() as belt-and-suspenders.
+  // auth.users has the non-dotted form (grahamesnyder@gmail.com, created 2026-06-12); the
+  // normalizer makes the check succeed no matter which form he types into the magic-link box.
+  "grahamesnyder@gmail.com",
+  "graham.e.snyder@gmail.com",
   // TODO(2026-06-30) — add Arvind Kumar's evaluator email (EisnerAmper, RUAIH Org Readiness
   // engine reviewer). Hash-link demo path at demo.aiwizn.com/ruaih-readiness/ works for him
   // without /demo hub access; this entry is for hub access only. Awaiting exact address
   // from Thomas. Format: <name>@eisneramper.com (lowercased).
 ];
 
-const INVITE_SET = new Set(INVITE_EMAILS.map((e) => e.toLowerCase()));
+/**
+ * Gmail treats a local-part with dots and without dots as the same address
+ * (grahamesnyder@gmail.com === graham.e.snyder@gmail.com), and ignores
+ * everything after a "+". Normalize both so a dotted sign-in attempt still
+ * matches a non-dotted invite-list entry (and vice versa). Only applies to
+ * gmail.com / googlemail.com — every other provider treats dots as significant.
+ *
+ * Reference: https://support.google.com/mail/answer/7436150
+ */
+function normalizeEmail(raw: string): string {
+  const e = raw.trim().toLowerCase();
+  if (!e.includes("@")) return e;
+  const [localRaw, domain] = e.split("@", 2);
+  if (domain !== "gmail.com" && domain !== "googlemail.com") return e;
+  // Strip everything from the first "+" and remove all dots from the local part.
+  const local = localRaw.split("+", 1)[0].replace(/\./g, "");
+  return local + "@gmail.com"; // normalize googlemail → gmail too, since Google routes both
+}
+
+const INVITE_SET = new Set(INVITE_EMAILS.map((e) => normalizeEmail(e)));
 
 /**
  * Returns true iff `email` is allowed to access the gated /demo hub.
- * Domain match (ateninc.com) OR an explicit invite-list address.
+ * Domain match (ateninc.com) OR an explicit invite-list address (with Gmail
+ * dot/+ normalization so `graham.e.snyder@gmail.com` and
+ * `grahamesnyder@gmail.com` both match).
  *
  * Returns false for null/undefined/empty input — never throws.
  */
@@ -81,7 +109,7 @@ export function isDemoHubAllowed(email: string | null | undefined): boolean {
     return true;
   }
 
-  return INVITE_SET.has(e);
+  return INVITE_SET.has(normalizeEmail(e));
 }
 
 /** Exposed for the CLAUDE.md operator runbook + admin diagnostics only. */
